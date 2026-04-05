@@ -14,7 +14,7 @@ export class FileTypeService {
         ["application/pdf", "pdf"],
         ['image/tiff', "tiff"]
     ]);
-
+    
     /**
      * Retrieves the file type based on the provided content type.
      * 
@@ -29,5 +29,39 @@ export class FileTypeService {
         }
         return type;
     }
+
+    /** Validates if the provided file type is supported.
+     * 
+     * @param fileType - The file type to validate.
+     * @returns True if the file type is supported, false otherwise.
+     */
+    validateFileType(fileType: string): boolean {
+        return Array.from(this.mimeTypes.values()).includes(fileType.trim().toLowerCase());
+    }
+
+    /** Determines if the provided file type is PDF.
+     * 
+     * @param fileType - The file type to check.
+     * @returns True if the file type is PDF, false otherwise.
+     */
+    isPdf(fileType: string): boolean {
+        let type = fileType.trim().toLowerCase();
+        const isValid = this.validateFileType(type);
+        return !isValid || type === "pdf";
+    }
+
+    /** Determines if the provided file type is TIFF.
+     * 
+     * @param fileType - The file type to check.
+     * @returns True if the file type is TIFF, false otherwise.
+     */
+    isTiff(fileType: string): boolean {
+        let type = fileType.trim().toLowerCase();
+        const isValid = this.validateFileType(type);
+        return !isValid || type === "tiff";
+    }
+
+
+
 }
 

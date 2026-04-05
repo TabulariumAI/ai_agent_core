@@ -16,7 +16,7 @@ import { ReprocessUseCase, ReprocessData } from "../../application/useCases/repr
 
 /**
  * Controller responsible for handling reprocess operations.
- * It processes a text notice for a specific session and document segment.
+ * It reprocesses a specific session and document segment.
  */
 
 @Service()

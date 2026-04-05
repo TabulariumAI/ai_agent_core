@@ -34,24 +34,29 @@ describe("ReprocessController Integration", () => {
         jest.clearAllMocks();
     });
 
-    it("should return 200 and call useCase.execute when notice is valid", async () => {
+    it("should return 200 and call useCase.execute when the request is valid", async () => {
         useCaseMock.execute.mockResolvedValue(undefined);
 
         const response = await request(app)
             .post(url)
 
+        expect(useCaseMock.execute).toHaveBeenCalledWith({
+            session: "test-session",
+            segment: "party",
+        });
         expect(response.status).toBe(200);
         expect(response.body).toEqual({});
     });
 
-    it("should return 400 when notice is invalid", async () => {
+    it("should return 200 when no request body is provided", async () => {
         useCaseMock.execute.mockResolvedValue(undefined);
 
         const response = await request(app)
             .post(url)
+            .send({});
 
-        expect(response.status).toBe(400);
-        expect(response.body.error).toMatch("Invalid request: valid Notice is required");
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({});
     });
 
     it("should return 400 when segment is invalid", async () => {

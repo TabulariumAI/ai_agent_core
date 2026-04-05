@@ -1,3 +1,4 @@
+import { request } from "http";
 import { InternalError } from "./core/entities/error";
 import 'dotenv/config'
 
@@ -11,6 +12,10 @@ export class Config {
         return value.replace(/\/$/, "");
     }
 
+    private static value(name: keyof NodeJS.ProcessEnv): string {
+        const value = process.env[name];
+        return value ? value.replace(/\/$/, "") : "";
+    }
 
 
     static readonly apiKey = this.require("API_KEY");
@@ -25,7 +30,12 @@ export class Config {
         redact: this.require("REDACT_URL"),
         reprocess: this.require("REPROCESS_URL")
     };
-    
+
+    static readonly formats = {
+        recordFormat: this.value("RECORD_FORMAT"),
+        redactFormat: this.value("REDACT_FORMAT"),
+    };
+   
     static callback = {
         url: (path: string): string => `${this.services.callbackUrl}/${path}`
     };
@@ -54,6 +64,5 @@ export class Config {
     static reprocess = {
         document: (session: string, segment: string): string => `${this.services.reprocess}/reprocess/${session}/${segment}`
     };
-
 
 }

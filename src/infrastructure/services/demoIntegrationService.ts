@@ -1,12 +1,16 @@
 import { Service } from "typedi";
-import { Readable } from "stream";
+import { Readable, pipeline } from "stream";
+import { promisify } from "util";
 import { v4 as uuidv4 } from "uuid";
+
+const pipelineAsync = promisify(pipeline);
 
 import { IIntegrationService } from "../../core/interfaces/integrationService";
 import { MetaData } from "../../core/entities/metadata";
 import * as fs from "fs";
 import * as path from "path";
 import { Workflow } from "../../core/entities/workflowContext";
+import { CallbackType } from "../../core/entities/imports";
 
 
 /**
@@ -38,29 +42,30 @@ export class DemoIntegrationService implements IIntegrationService {
         }
     }
 
-    /** Saves a TIFF file to the specified session and directory.
+    /** Saves a document to the specified session and directory.
      * @param session - The session identifier.
      * @param dir - The directory where the file will be saved.
      * @param file - The name of the file to save.
-     * @param data - The Readable stream containing the TIFF data.
+     * @param data - The Readable stream containing the document data.
      * @return A promise that resolves to the full path of the saved file.
      * @throws Error if there is an issue creating directories or writing the file.
      */
-    private async saveTiff(session: string, dir: string, file: string, data: Readable): Promise<string> {
+    private async saveDocument(session: string, dir: string, file: string, data: Readable): Promise<string> {
         const outputDir = path.resolve(__dirname, `../../../mock-data/${session}/${dir}`);
+        const fullPath = path.join(outputDir, file);
         try {
-            const fullPath = path.join(outputDir, file);
             await fs.promises.mkdir(outputDir, { recursive: true });
+        } catch (error) {
+            console.error("Error creating directory:", error);
+            throw new Error(`Failed to create directory: ${outputDir}`);
+        }
+        try {
             const writeStream = fs.createWriteStream(fullPath);
-            await new Promise<void>((resolve, reject) => {
-                data.pipe(writeStream);
-                writeStream.on("finish", resolve);
-                writeStream.on("error", reject);
-            });
+            await pipelineAsync(data, writeStream);
             return fullPath;
         } catch (error) {
-            console.error("Error creating directories:", error);
-            throw new Error("Failed to save Tiff file");
+            console.error("Error saving document:", error);
+            throw new Error(`Failed to save document: ${fullPath}`);
         }
     }
 
@@ -108,47 +113,51 @@ export class DemoIntegrationService implements IIntegrationService {
         console.log(`Info: workflow:${Workflow.PROVISION}, session: ${session}. Metadata saved to ${fullPath}`);
     }
 
-    /** Processes the redact step by saving a TIFF file.
+    /** Processes the redact step by saving a document.
      * @param session - The session identifier.
-     * @param data - The Readable stream containing the TIFF data.
-     * @return A promise that resolves when the TIFF file is saved.
-     * @throws Error if there is an issue saving the TIFF file.
+     * @param data - The Readable stream containing the document data.
+     * @param type - The type of callback to be processed.
+     * @return A promise that resolves when the document is saved.
+     * @throws Error if there is an issue saving the document.
      */
-    async processRedact(session: string, data: Readable): Promise<void> {
-        const fullPath = await this.saveTiff(session, "redact", "document.tiff", data);
+    async processRedact(session: string, data: Readable, type: string): Promise<void> {
+        const fullPath = await this.saveDocument(session, "redact", "document."+ type.toLowerCase().replace(/"/g, "").replace("redact", ""), data);
         console.log(`Info: workflow:${Workflow.REDACT}, session: ${session}. Document saved to ${fullPath}`);
     }
 
-    /** Processes the auto-redact step by saving a TIFF file.
+    /** Processes the auto-redact step by saving a document.
      * @param session - The session identifier.
-     * @param data - The Readable stream containing the TIFF data.
-     * @return A promise that resolves when the TIFF file is saved.
-     * @throws Error if there is an issue saving the TIFF file.
+     * @param data - The Readable stream containing the document data.
+     * @param type - The type of callback to be processed.
+     * @return A promise that resolves when the document is saved.
+     * @throws Error if there is an issue saving the document.
      */
-    async processAutoRedact(session: string, data: Readable): Promise<void> {
-        const fullPath = await this.saveTiff(session, "autoredact", "document.tiff", data);
+    async processAutoRedact(session: string, data: Readable, type: string): Promise<void> {
+        const fullPath = await this.saveDocument(session, "autoredact", "document."+ type.toLowerCase().replace(/"/g, "").replace("redact", ""), data);
         console.log(`Info: workflow:${Workflow.AUTOREDACT}, session: ${session}. Document saved to ${fullPath}`);
     }
 
-    /** Processes the endorse step by saving a TIFF file.
+    /** Processes the endorse step by saving a document.
      * @param session - The session identifier.
-     * @param data - The Readable stream containing the TIFF data.
-     * @return A promise that resolves when the TIFF file is saved.
-     * @throws Error if there is an issue saving the TIFF file.
+     * @param data - The Readable stream containing the document data.
+     * @param type - The type of callback to be processed.
+     * @return A promise that resolves when the document is saved.
+     * @throws Error if there is an issue saving the document.
      */
-    async processEndorse(session: string, data: Readable): Promise<void> {
-        const fullPath = await this.saveTiff(session, "endorse", "document.tiff", data);
+    async processEndorse(session: string, data: Readable, type: string): Promise<void> {
+        const fullPath = await this.saveDocument(session, "endorse", "document."+ type.toLowerCase().replace(/"/g, "").replace("record", ""), data);
         console.log(`Info: workflow:${Workflow.ENDORSE}, session: ${session}. Document saved to ${fullPath}`);
     }
 
-    /** Processes the auto-record step by saving a TIFF file.
+    /** Processes the auto-record step by saving a document.
      * @param session - The session identifier.
-     * @param data - The Readable stream containing the TIFF data.
-     * @return A promise that resolves when the TIFF file is saved.
-     * @throws Error if there is an issue saving the TIFF file.
+     * @param data - The Readable stream containing the document data.
+     * @param type - The type of callback to be processed.
+     * @return A promise that resolves when the document is saved.
+     * @throws Error if there is an issue saving the document.
      */
-    async processAutoRecord(session: string, data: Readable): Promise<void> {
-        const fullPath = await this.saveTiff(session, "autorecord", "document.tiff", data);
+    async processAutoRecord(session: string, data: Readable, type: string): Promise<void> {
+        const fullPath = await this.saveDocument(session, "autorecord", "document."+ type.toLowerCase().replace(/"/g, "").replace("record", ""), data);
         console.log(`Info: workflow:${Workflow.AUTORECORD}, session: ${session}. Document saved to ${fullPath}`);
     }
 
@@ -159,9 +168,9 @@ export class DemoIntegrationService implements IIntegrationService {
      * @throws Error if there is an issue recording the metadata.
      */
     async record(session: string, data: MetaData): Promise<MetaData> {
-        // Title should be mapped to your document inetrnal  
-        // Number shoud be generated in your internal number pool
-        // Date should acceptable format
+        // Title should be mapped to your document internal type
+        // Number should be generated in your internal number pool
+        // Date should be in an acceptable format
 
         console.log(`Record: session: ${session}`);
         data.heading.number = (Math.floor(Math.random() * 900) + 100).toString();

@@ -55,13 +55,20 @@ export class EndorseCallbackUseCase {
       await this.trackingService.trackError(this.context, data.session, `Error downloading blob: ${data.callbackData.data}`);
       return;
     }
+
+    if (!data.callbackData.types) {
+      await this.trackingService.trackError(this.context, data.session, "Callback data type is missing");
+      return;
+    }
+
     await this.trackingService.trackSuccess(this.context, data.session);
 
     // The processing should be done in the integration service 
     try {
-      await this.integrationService.processEndorse(data.session, stream);
+      await this.integrationService.processEndorse(data.session, stream, data.callbackData.types);
     }
     catch (error) {
+      await this.trackingService.trackError(this.context, data.session, `Error processing endorse: ${error instanceof Error ? error.message : String(error)}`);
       return;
     }
   }

@@ -1,6 +1,7 @@
 import { Readable } from "stream";
 
 import { MetaData } from "../entities/metadata";
+import { CallbackType } from "../entities/imports";
 
 /**
  * Interface for Integration Service.
@@ -51,33 +52,37 @@ export interface IIntegrationService {
    * Processes the redaction of data for a given session.
    * @param session - The session identifier.
    * @param data - The readable stream containing data to be redacted.
+   * @param type - The type of callback to be processed.
    * @returns A promise that resolves when the operation is complete.
    */
-  processRedact(session: string, data: Readable): Promise<void>;
+  processRedact(session: string, data: Readable, type: string): Promise<void>;
 
   /**
    * Automatically processes the redaction of data for a given session.
    * @param session - The session identifier.
    * @param data - The readable stream containing data to be auto-redacted.
+   * @param type - The type of callback to be processed.
    * @returns A promise that resolves when the operation is complete.
    */
-  processAutoRedact(session: string, data: Readable): Promise<void>;
+  processAutoRedact(session: string, data: Readable, type: string): Promise<void>;
 
   /**
    * Processes the endorsement of data for a given session.
    * @param session - The session identifier.
    * @param data - The readable stream containing data to be endorsed.
+   * @param type - The type of callback to be processed.
    * @returns A promise that resolves when the operation is complete.
    */
-  processEndorse(session: string, data: Readable): Promise<void>;
+  processEndorse(session: string, data: Readable, type: string): Promise<void>;
 
   /**
    * Automatically records data for a given session.
    * @param session - The session identifier.
    * @param data - The readable stream containing data to be auto-recorded.
+   * @param type - The type of callback to be processed.
    * @returns A promise that resolves when the operation is complete.
    */
-  processAutoRecord(session: string, data: Readable): Promise<void>;
+  processAutoRecord(session: string, data: Readable, type: string): Promise<void>;
 
   /**
    * Records metadata for a given session and returns the resulting metadata.

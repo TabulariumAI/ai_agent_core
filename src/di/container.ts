@@ -25,7 +25,7 @@ export function setupContainer() {
         Container.get(Services.TokenService),
     ));
     Container.set<Interfaces.IRedactClient>(TOKENS.IRedactClient, new AIClients.RedactClient(
-        Container.get(Services.TokenService),
+        Container.get(Services.TokenService), Container.get(Services.FileTypeService),
     ));
     Container.set<Interfaces.IReprocessClient>(TOKENS.IReprocessClient, new AIClients.ReprocessClient(
         Container.get(Services.TokenService),
@@ -34,7 +34,7 @@ export function setupContainer() {
         Container.get(Services.TokenService),
     ));
     Container.set<Interfaces.IRecordClient>(TOKENS.IRecordClient, new AIClients.RecordClient(
-        Container.get(Services.TokenService),
+        Container.get(Services.TokenService),Container.get(Services.FileTypeService),
     ));
 
 }

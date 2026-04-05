@@ -31,10 +31,32 @@ export enum CallbackStatus {
 }
 
 /**
+ * CallbackTypes is an enum that categorizes different types of callbacks that can be received.
+ * It helps in identifying the nature of the callback and processing it accordingly.
+ */
+export enum CallbackType {
+    ChainJson,
+    MetadataJson,
+    RecordTiff,
+    RecordPdf,
+    ManifestTiff,
+    ManifestPdf,
+    ConfirmationPdf,
+    ConfirmationTiff,
+    RedactPdf,
+    RedactTiff,
+    PagePdf,
+    PageTiff,
+    Error,
+    Empty,
+}
+
+/**
  * CallbackData is an interface that defines the structure of the data returned by a callback operation.
  * It includes a status to indicate the result of the operation and a data field for any additional information.
  */
 export interface CallbackData {
     status: CallbackStatus,
     data: string
+    types?: string
 }

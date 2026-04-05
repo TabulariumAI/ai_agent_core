@@ -5,6 +5,7 @@ import * as Entities from "../../core/entities/imports";
 import { IRedactClient } from "../../core/interfaces/imports";
 import { TokenService } from "../services/tokenService";
 import { Config } from "../../config";
+import { FileTypeService } from "../services/imports";
 
 
 
@@ -17,11 +18,13 @@ export class RedactClient implements IRedactClient {
 
     constructor(
         @Inject() private readonly tokenService: TokenService,
+        @Inject() private readonly fileTypeService: FileTypeService,
         //@Inject(TOKENS.ITrackingService) private readonly trackingService: ITrackingService,
-    ) {}
+    ) { }
 
     async redactDocument(context: Entities.WorkflowContext, session: string, metaData: Entities.MetaData | null, callback: Entities.Callback): Promise<void> {
-        const url =  Config.redact.document(session);
+        const url = Config.redact.document(session);
+        const format = Config.formats.redactFormat;
 
         const path = `${callback}?sn=${session}`;
         const token = this.tokenService.sign(path);
@@ -34,6 +37,10 @@ export class RedactClient implements IRedactClient {
             },
             body: JSON.stringify({
                 "data": metaData ? metaData : null,
+                "choices": {
+                    "tif_redaction": this.fileTypeService.isTiff(format) ? true : false,
+                    "pdf_redaction": this.fileTypeService.isPdf(format) ? true : false,
+                },
                 "callback_url": `${Config.callback.url(path)}`,
                 "callback_token": token,
             }),

@@ -22,11 +22,11 @@ export interface RedactCallbackData {
  */
 @Service()
 export class RedactCallbackUseCase {
-  private readonly context:Entities.WorkflowContext = {
+  private readonly context: Entities.WorkflowContext = {
     workflow: Entities.Workflow.REDACT,
     step: Entities.Step.REDACT
   };
-  
+
   constructor(
     @Inject(TOKENS.IIntegrationService) private readonly integrationService: Interfaces.IIntegrationService,
     @Inject(TOKENS.ITrackingService) private readonly trackingService: Interfaces.ITrackingService,
@@ -54,11 +54,17 @@ export class RedactCallbackUseCase {
       await this.trackingService.trackError(this.context, data.session, `Error downloading blob: ${data.callbackData.data}`);
       return;
     }
-    await this.trackingService.trackSuccess(this.context, data.session, );
+
+    if (!data.callbackData.types) {
+      await this.trackingService.trackError(this.context, data.session, "Callback data type is missing");
+      return;
+    }
+
+    await this.trackingService.trackSuccess(this.context, data.session,);
 
     // The processing should be done in the integration service 
     try {
-      await this.integrationService.processRedact(data.session, stream);
+      await this.integrationService.processRedact(data.session, stream, data.callbackData.types);
     }
     catch (error) {
       return;
