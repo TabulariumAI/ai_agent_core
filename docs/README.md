@@ -8,16 +8,7 @@ This folder contains the public API documentation for the AI Agent Core service,
 
 ## Overview
 
-This service is a TypeScript + Express API that exposes document-processing workflows such as:
-
-- indexing
-- provisioning
-- auto-redaction
-- auto-recording
-- calculation
-- endorsement
-- reprocessing
-
+This service is a TypeScript + Express API that exposes offcial records processing workflows.
 The server starts on port `3000` by default.
 
 ## Prerequisites
