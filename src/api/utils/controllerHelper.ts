@@ -97,17 +97,12 @@ export class ControllerHelper {
 
   initIndexing(
     file: Express.Multer.File,
-    choice: Choice,
   ): string {
     let fileType = "";
     try {
       fileType = this.fileTypeService.getFileType(file.mimetype);
     } catch (error) {
       throw new BadRequestError("Invalid request: no file uploaded or unsupported file type");
-    }
-
-    if (!this.choiceService.validateChoice(choice)) {
-      throw new BadRequestError("Invalid request: valid Choice is required in 'choice' field");
     }
 
     return fileType;

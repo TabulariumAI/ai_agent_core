@@ -33,7 +33,6 @@ export class IndexController {
    * 
    * @route POST /index
    * @param file - The file to be indexed, uploaded as multipart/form-data  
-   * @param choice - The choice payload containing items to index
    * 
    * @returns 200 OK - Success with session information
    * @returns 400 Bad Request - Validation error
@@ -44,17 +43,15 @@ export class IndexController {
   @UseBefore(upload.single('file'))
   async index(
     @Req() req: Request, @Res() res: Response,
-    @BodyParam("choice") choice: Choice,
   ) {
     return await this.helper.withErrorHandling(async () => {
       // Inialize indexing and get file type
       const file = req.file as Express.Multer.File;
-      const fileType = this.helper.initIndexing(file, choice);
+      const fileType = this.helper.initIndexing(file);
       // Execute the use case
       const data: IndexData = {
         documentType: fileType,
         stream: Readable.from(file.buffer),
-        choice: choice.items
       }
       const session = await this.useCase.execute(data);
       return { session: session };

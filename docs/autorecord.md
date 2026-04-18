@@ -10,14 +10,14 @@ Starts the auto-record workflow.
 
 ### Form fields
 - `file`: uploaded document
-- `choice`: JSON string with `items`
+
+> No `choice` payload is required. The API now applies the auto-record choice profile internally.
 
 ### Example
 
 ```bash
 curl -X POST "<AGENT_PUBLIC_URL>/autorecord" \
-  -F "file=@./sample.pdf;type=application/pdf" \
-  -F "choice={\"items\":[{\"service\":\"Recognition\",\"level\":1},{\"service\":\"Record\",\"level\":1}]}"
+  -F "file=@./sample.pdf;type=application/pdf"
 ```
 
 ## Success response
@@ -31,9 +31,8 @@ curl -X POST "<AGENT_PUBLIC_URL>/autorecord" \
 ## Errors
 
 - `400 Invalid request: no file uploaded or unsupported file type`
-- `400 Invalid request: valid Choice is required in 'choice' field`
 - `404` if upstream resources are missing
 - `500` for internal failures
 
-## Related guide
-- `../AUTORECORD_USER_GUIDE.md`
+## Related documentation
+- See the main docs overview in [README.md](./README.md)

@@ -20,19 +20,6 @@ describe('IndexController Integration', () => {
     let useCaseMock: jest.Mocked<IndexUseCase>;
 
     const url = "/index";
-    
-    const choice: Choice = {
-        items: [{
-            service: 'Recognition',
-            level: 3
-        }]
-    };
-    const incorrectChoice: Choice = {
-        items: [{
-            service: 'Incorrect',
-            level: 3
-        }]
-    };
 
     beforeAll(() => {
         routingUseContainer(Container);
@@ -61,8 +48,7 @@ describe('IndexController Integration', () => {
 
         const response = await request(app)
             .post(url)
-            .attach('file', path.resolve(__dirname, '../documents/test.TIFF'))
-            .field('choice', JSON.stringify(choice));
+            .attach('file', path.resolve(__dirname, '../documents/test.TIFF'));
 
         expect(response.status).toBe(200);
         expect(response.body.session).toBe("test-session");
@@ -73,8 +59,7 @@ describe('IndexController Integration', () => {
 
         const response = await request(app)
             .post(url)
-            .attach('file', path.resolve(__dirname, '../documents/test.txt'))
-            .field('choice', JSON.stringify(choice));
+            .attach('file', path.resolve(__dirname, '../documents/test.txt'));
 
         expect(response.status).toBe(400);
         expect(response.body.error).toContain("Invalid request: no file uploaded or unsupported file type");
@@ -84,33 +69,9 @@ describe('IndexController Integration', () => {
         useCaseMock.execute.mockResolvedValue("test-session");
 
         const response = await request(app)
-            .post(url)
-            .field('choice', JSON.stringify(choice));
+            .post(url);
 
         expect(response.status).toBe(400);
         expect(response.body.error).toContain("Invalid request: no file uploaded or unsupported file type");
-    });
-
-    it('should fail if no choice provided', async () => {
-        useCaseMock.execute.mockResolvedValue("test-session");
-
-        const response = await request(app)
-            .post(url)
-            .attach('file', path.resolve(__dirname, '../documents/test.TIFF'))
-
-        expect(response.status).toBe(400);
-        expect(response.body.error).toContain("Invalid request: valid Choice is required in 'choice' field");
-    });
-
-    it('should fail if no correct choice provided', async () => {
-        useCaseMock.execute.mockResolvedValue("test-session");
-
-        const response = await request(app)
-            .post(url)
-            .attach('file', path.resolve(__dirname, '../documents/test.TIFF'))
-            .field('choice', JSON.stringify(incorrectChoice));
-
-        expect(response.status).toBe(400);
-        expect(response.body.error).toContain("Invalid request: valid Choice is required in 'choice' field");
     });
 });

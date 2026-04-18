@@ -129,6 +129,8 @@ npm run test:watch
 - [`autoredact.md`](./autoredact.md) — `POST /autoredact`
 - [`autorecord.md`](./autorecord.md) — `POST /autorecord`
 
+> These upload endpoints now use **internal default choice profiles**. Clients only need to send the file in the request.
+
 ### Session-based JSON workflows
 - [`calc.md`](./calc.md) — `POST /calc/:session`
 - [`redact.md`](./redact.md) — `POST /redact/:session`

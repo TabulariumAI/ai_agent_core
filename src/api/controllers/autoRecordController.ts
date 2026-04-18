@@ -49,19 +49,17 @@ export class AutoRecordController {
    */
   @Post("/autorecord")
   @UseBefore(upload.single('file'))
-  async autoredact(
+  async autorecord(
     @Req() req: Request, @Res() res: Response,
-    @BodyParam("choice") choice: Choice,
   ) {
     return await this.helper.withErrorHandling(async () => {
       // Inialize indexing and get file type
       const file = req.file as Express.Multer.File;
-      const fileType = this.helper.initIndexing(file, choice);
+      const fileType = this.helper.initIndexing(file);
       // Execute the use case
       const data: AutoRecordData = {
         documentType: fileType,
         stream: Readable.from(file.buffer),
-        choice: choice.items
       }
       const session = await this.useCase.execute(data);
       return { session: session };
