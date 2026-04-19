@@ -46,5 +46,9 @@ export const provisionChoice: Entities.Choice = {
             "service": "PartyEnrichment",
             "level": 1
         },
+        {
+            "service": "Validation",
+            "level": 1
+        }
     ]
 }
