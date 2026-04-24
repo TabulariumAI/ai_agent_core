@@ -11,6 +11,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { Workflow } from "../../core/entities/workflowContext";
 import { CallbackType } from "../../core/entities/imports";
+import { CallbackService } from "./callbackService";
 
 
 /**
@@ -121,7 +122,8 @@ export class DemoIntegrationService implements IIntegrationService {
      * @throws Error if there is an issue saving the document.
      */
     async processRedact(session: string, data: Readable, type: string): Promise<void> {
-        const fullPath = await this.saveDocument(session, "redact", "document."+ type.toLowerCase().replace(/"/g, "").replace("redact", ""), data);
+        const callbackService = new CallbackService();
+        const fullPath = await this.saveDocument(session, "redact", callbackService.getCallbackDataFile(type), data);
         console.log(`Info: workflow:${Workflow.REDACT}, session: ${session}. Document saved to ${fullPath}`);
     }
 
@@ -133,7 +135,8 @@ export class DemoIntegrationService implements IIntegrationService {
      * @throws Error if there is an issue saving the document.
      */
     async processAutoRedact(session: string, data: Readable, type: string): Promise<void> {
-        const fullPath = await this.saveDocument(session, "autoredact", "document."+ type.toLowerCase().replace(/"/g, "").replace("redact", ""), data);
+        const callbackService = new CallbackService();
+        const fullPath = await this.saveDocument(session, "autoredact", callbackService.getCallbackDataFile(type), data);
         console.log(`Info: workflow:${Workflow.AUTOREDACT}, session: ${session}. Document saved to ${fullPath}`);
     }
 
@@ -145,7 +148,8 @@ export class DemoIntegrationService implements IIntegrationService {
      * @throws Error if there is an issue saving the document.
      */
     async processEndorse(session: string, data: Readable, type: string): Promise<void> {
-        const fullPath = await this.saveDocument(session, "endorse", "document."+ type.toLowerCase().replace(/"/g, "").replace("record", ""), data);
+        const callbackService = new CallbackService();
+        const fullPath = await this.saveDocument(session, "endorse", callbackService.getCallbackDataFile(type), data);
         console.log(`Info: workflow:${Workflow.ENDORSE}, session: ${session}. Document saved to ${fullPath}`);
     }
 
@@ -157,7 +161,8 @@ export class DemoIntegrationService implements IIntegrationService {
      * @throws Error if there is an issue saving the document.
      */
     async processAutoRecord(session: string, data: Readable, type: string): Promise<void> {
-        const fullPath = await this.saveDocument(session, "autorecord", "document."+ type.toLowerCase().replace(/"/g, "").replace("record", ""), data);
+        const callbackService = new CallbackService();
+        const fullPath = await this.saveDocument(session, "autorecord", callbackService.getCallbackDataFile(type), data);
         console.log(`Info: workflow:${Workflow.AUTORECORD}, session: ${session}. Document saved to ${fullPath}`);
     }
 

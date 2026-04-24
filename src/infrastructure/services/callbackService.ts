@@ -36,4 +36,19 @@ export class CallbackService {
         return true;
     }
 
+    getCallbackDataFile(type: string): string {
+        const val: string = type.toLowerCase().replace(/"/g, "");
+        const extensions = ["pdf", "tiff", "json"];
+        let extension = "";
+        for (const ext of extensions) {
+            if (val.endsWith(ext)) {
+                extension = ext;
+                break;
+            }
+        }
+        const name = val.substring(0, val.length - extension.length) + (extension.length > 0 ? "." + extension : "");
+        return name;
+    }
 }
+
+
