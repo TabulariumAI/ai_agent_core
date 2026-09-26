@@ -4,6 +4,7 @@ import {
     Req,
     Res,
     QueryParam,
+    QueryParams,
     HeaderParam,
     Body,
 } from "routing-controllers";
@@ -15,6 +16,7 @@ import { ControllerHelper } from "../utils/controllerHelper";
 import { AutoRecordCallbackIndexUseCase, AutoRecordCallbackIndexData } from "../../application/useCases/autoRecordCallbackIndexUseCase";
 import { AutoRecordCallbackCalcUseCase, AutoRecordCallbackCalcData } from "../../application/useCases/autoRecordCallbackCalcUseCase";
 import { AutoRecordCallbackEndorseUseCase, AutoRecordCallbackEndorseData } from "../../application/useCases/autoRecordCallbackEndorseUseCase";
+import { SessionQueryParams } from "../utils/sessionQueryParam";
 
 /**
  * Controller responsible for handling auto-record callbacks.
@@ -34,7 +36,7 @@ export class AutoRecordCallbackController {
      * Handles auto-record index callback.
      * 
      * @route POST /callback/autorecord/index
-     * @param session - The session identifier from the query parameters
+     * @param session - The session information from the query parameters
      * @param token - The authorization token from the header
      * @param body - The callback data in the request body
      * 
@@ -45,14 +47,15 @@ export class AutoRecordCallbackController {
     @Post(`/${Callback.AUTORECORD_INDEX}`)
     async autoRecordIndex(
         @Req() req: Request, @Res() res: Response,
-        @QueryParam("sn") session: string,
+        @QueryParams() sessionParam: SessionQueryParams,
         @HeaderParam("Authorization") token: string,
         @Body() callbackData: CallbackData
     ) {
-        const tokenData = `${Callback.AUTORECORD_INDEX}?sn=${session}`;
+        const session = sessionParam.toSession();
+        const tokenData = `${Callback.AUTORECORD_INDEX}?${session.getPath()}`;
         return await this.helper.withCallbackErrorHandling(tokenData, token, callbackData, async () => {
             // Execute the use case
-            const data: AutoRecordCallbackIndexData = { session: session, callbackData: callbackData };
+            const data: AutoRecordCallbackIndexData = { sessionData: session, callbackData: callbackData };
             await this.autoRecordCallbackIndexUseCase.execute(data);
         }, res);
     }
@@ -61,7 +64,7 @@ export class AutoRecordCallbackController {
      * Handles auto-record calculation callback.
      * 
      * @route POST /callback/autorecord/calc
-     * @param session - The session identifier from the query parameters
+     * @param session - The session information from the query parameters
      * @param token - The authorization token from the header
      * @param body - The callback data in the request body
      * 
@@ -72,14 +75,15 @@ export class AutoRecordCallbackController {
     @Post(`/${Callback.AUTORECORD_CALC}`)
     async autoRecordCalc(
         @Req() req: Request, @Res() res: Response,
-        @QueryParam("sn") session: string,
         @HeaderParam("Authorization") token: string,
-        @Body() callbackData: CallbackData
+        @QueryParams() sessionParam: SessionQueryParams,
+        @Body() callbackData: CallbackData,
     ) {
-        const tokenData = `${Callback.AUTORECORD_CALC}?sn=${session}`;
+        const session = sessionParam.toSession();
+        const tokenData = `${Callback.AUTORECORD_CALC}?${session.getPath()}`;
         return await this.helper.withCallbackErrorHandling(tokenData, token, callbackData, async () => {
             // Execute the use case
-            const data: AutoRecordCallbackCalcData = { session: session, callbackData: callbackData };
+            const data: AutoRecordCallbackCalcData = { sessionData: session, callbackData: callbackData };
             await this.autoRecordCallbackCalcUseCase.execute(data);
         }, res);
     }
@@ -88,7 +92,7 @@ export class AutoRecordCallbackController {
      * Handles auto-record endorse callback.
      * 
      * @route POST /callback/autorecord/endorse
-     * @param session - The session identifier from the query parameters
+     * @param session - The session information from the query parameters
      * @param token - The authorization token from the header
      * @param body - The callback data in the request body
      * 
@@ -97,16 +101,17 @@ export class AutoRecordCallbackController {
      * @returns 400 Bad Request - Invalid callback data
      */
     @Post(`/${Callback.AUTORECORD_ENDORSE}`)
-    async autoRedcordEndorse(
+    async autoRecordEndorse(
         @Req() req: Request, @Res() res: Response,
-        @QueryParam("sn") session: string,
+        @QueryParams() sessionParam: SessionQueryParams,
         @HeaderParam("Authorization") token: string,
         @Body() callbackData: CallbackData
     ) {
-        const tokenData = `${Callback.AUTORECORD_ENDORSE}?sn=${session}`;
+        const session = sessionParam.toSession();
+        const tokenData = `${Callback.AUTORECORD_ENDORSE}?${session.getPath()}`;
         return await this.helper.withCallbackErrorHandling(tokenData, token, callbackData, async () => {
             // Execute the use case
-            const data: AutoRecordCallbackEndorseData  = { session: session, callbackData: callbackData };
+            const data: AutoRecordCallbackEndorseData  = { sessionData: session, callbackData: callbackData };
             await this.autoRecordCallbackEndorseUseCase.execute(data);
         }, res);
     }

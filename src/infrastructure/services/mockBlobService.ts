@@ -1,14 +1,21 @@
-import { Service, Token } from 'typedi';
+import { Service } from 'typedi';
 import { Readable } from 'stream';
 
-const { BlockBlobClient } = require('@azure/storage-blob');
-
 import { IBlobService } from '../../core/interfaces/blobService';
-import { MetaData } from '../../core/entities/metadata';
+import { Content } from '../../core/entities/content';
 
+interface MockMetaData {
+  heading: {
+    title: string;
+    class: string;
+    explanation: string;
+  };
+  secrets: unknown[];
+  indexes: unknown[];
+}
 
 /** Mock metadata */
-const metaData: MetaData = {
+const metaData: MockMetaData = {
   heading: {
     title: "Mock Document",
     class: "class",
@@ -26,6 +33,7 @@ const metaData: MetaData = {
 @Service()
 export class MockBlobService implements IBlobService {
   async upload(url: string, content: Readable): Promise<void> {
+    return;
   }
 
   async download(url: string): Promise<Readable> {
@@ -38,6 +46,25 @@ export class MockBlobService implements IBlobService {
     }
     stream.push(null);
     return stream;
+  }
+
+  async downloadContent(url: string, type: string): Promise<Content> {
+    if (url === "https://example.com/test.json") {
+      return {
+        documentType: type || "json",
+        data: Buffer.from(JSON.stringify(metaData)),
+      };
+    }
+
+    throw new Error(`No content found for URL: ${url}`);
+  }
+
+  async downloadString(url: string): Promise<string> {
+    if (url === "https://example.com/test.json") {
+      return JSON.stringify(metaData);
+    }
+
+    throw new Error(`No content found for URL: ${url}`);
   }
 }
 

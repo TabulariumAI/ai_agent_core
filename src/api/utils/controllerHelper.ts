@@ -1,7 +1,9 @@
 import { Service, Inject } from "typedi";
 import { Response, Request } from "express";
 
-import { TokenService, FileTypeService, ChoiceService } from "../../infrastructure/services/imports";
+import { TokenService } from "../../infrastructure/services/tokenService";
+import { FileTypeService } from "../../infrastructure/services/fileTypeService";
+import { ChoiceService } from "../../infrastructure/services/choiceService";
 import { BadRequestError, AuthorizationError, InternalError, NotFoundError } from "../../core/entities/error";
 import { CallbackData, CallbackStatus } from "../../core/entities/callback";
 import { Choice } from "../../core/entities/choice";
@@ -80,7 +82,7 @@ export class ControllerHelper {
         throw new AuthorizationError("Invalid token");
       }
       // Validate the callback data
-      if (!data || !data.status || data.status !== CallbackStatus.COMPLETED) {
+      if (!data || !Object.values(CallbackStatus).includes(data.status)) {
         throw new BadRequestError("Callback data is invalid or missing status");
       }
       await action(data);
@@ -90,6 +92,9 @@ export class ControllerHelper {
       }
       else if (error instanceof BadRequestError) {
         return res.status(400).send({ error: error.message });
+      }
+      else {
+        return res.status(500).send({ error: "Internal server error" });
       }
     }
     return res.status(200).send({});

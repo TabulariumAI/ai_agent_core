@@ -4,15 +4,13 @@ import {
     Req,
     Res,
     Param,
-    Body
+    Body,
 } from "routing-controllers";
 import { Request, Response } from "express";
 import { Inject, Service } from "typedi";
+import * as Entities from "../../core/entities/imports";
 
 import { ControllerHelper } from "../utils/controllerHelper";
-import { BadRequestError } from "../../core/entities/error"
-import { MetaDataService } from "../../infrastructure/services/metaDataService";
-import { MetaData } from "../../core/entities/metadata";
 import { CalcUseCase, CalcData } from "../../application/useCases/calcUseCase";
 
 /**
@@ -25,14 +23,13 @@ export class CalcController {
     constructor(
         @Inject() private readonly helper: ControllerHelper,
         @Inject() private readonly useCase: CalcUseCase,
-        @Inject() private readonly metaDataService: MetaDataService,
     ) { }
 
     /**
      * Starts calculation based on the provided metadata for a session.
      *
      * @route POST /calc/:session
-     * @param session - Session identifier
+     * @param session - The session query parameters containing session, batch, and task identifiers
      * @param metaData - The metadata payload containing information for calculation
      *
      * @returns 200 OK - Success
@@ -44,19 +41,12 @@ export class CalcController {
     async calc(
         @Req() req: Request, @Res() res: Response,
         @Param("session") session: string,
-        @Body() metaData: MetaData | null,
+        @Body() metaData: string | null,
     ) {
         return await this.helper.withErrorHandling(async () => {
-            // Validate metadata format
-            if (!metaData || Object.keys(metaData).length === 0) {
-                metaData = null; 
-            }
-            if (metaData && !this.metaDataService.validateMetaData(metaData)) {
-                throw new BadRequestError("Invalid request: valid MetaData is required");
-            }
             // Execute the use case
             const data: CalcData = {
-                session: session,
+                sessionData: new Entities.SessionCallbackData(session),
                 metaData: metaData
             }
             await this.useCase.execute(data);

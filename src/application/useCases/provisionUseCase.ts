@@ -1,11 +1,9 @@
 import { Inject, Service } from "typedi";
 import { Readable } from "stream";
 
-import { TOKENS } from "../../core/tokens";
-import * as Interfaces from "../../core/interfaces/imports";
 import * as Entities from "../../core/entities/imports";
-import { provisionChoice } from "./choices/provisionChoice";
-import { UseCaseHelper } from "../utils/useCaseHelper";
+import { IndexService } from "../../infrastructure/services/indexService";
+import { provisionChoice } from "../../core/entities/choices/provisionChoice";
 
 /** Data structure for provision use case.
  * Contains document type and stream.
@@ -17,6 +15,7 @@ import { UseCaseHelper } from "../utils/useCaseHelper";
 export interface ProvisionData {
     documentType: string,
     stream: Readable,
+    taskCallbackData?: Entities.TaskCallbackData
 }
 
 
@@ -31,7 +30,7 @@ export class ProvisionUseCase {
     }
 
     constructor(
-        @Inject() private readonly helper: UseCaseHelper,
+        @Inject() private readonly indexService: IndexService,
     ) { }
 
     /**
@@ -41,7 +40,7 @@ export class ProvisionUseCase {
      * @return {Promise<string>} - The session identifier for the provision process
      */
     async execute(data: ProvisionData): Promise<string> {
-        const session = await this.helper.index(this.context, data.documentType, data.stream, provisionChoice.items, Entities.Callback.PROVISION_INDEX);
+        const session = await this.indexService.index(this.context, data.documentType, data.stream, provisionChoice.items, Entities.Callback.PROVISION_INDEX, data.taskCallbackData);
         return session;
     }
 }

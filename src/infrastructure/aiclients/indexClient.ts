@@ -20,10 +20,9 @@ export class IndexClient implements IIndexClient {
         //@Inject(TOKENS.ITrackingService) private readonly trackingService: ITrackingService,
     ) {}
 
-    async indexDocument(context: Entities.WorkflowContext, session: string, document: string, choices: Entities.ChoiceItem[], callback: Entities.Callback): Promise<void> {
-        const url = Config.index.document(session);
-
-        const path = `${callback}?sn=${session}`;
+    async indexDocument(context: Entities.WorkflowContext, sessionCallbackData: Entities.SessionCallbackData, document: string, choices: Entities.ChoiceItem[], callback: Entities.Callback): Promise<void> {
+        const url = Config.index.document(sessionCallbackData.id);
+        let path = `${callback}?${sessionCallbackData.getPath()}`;
         const token = this.tokenService.sign(path);
 
         const response = await fetch(url, {

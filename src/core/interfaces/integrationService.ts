@@ -1,7 +1,5 @@
-import { Readable } from "stream";
 
-import { MetaData } from "../entities/metadata";
-import { CallbackType } from "../entities/imports";
+import  * as Entities  from "../entities/imports";
 
 /**
  * Interface for Integration Service.
@@ -19,70 +17,68 @@ export interface IIntegrationService {
   /**
    * Processes the indexing of metadata for a given session.
    * @param session - The session identifier.
-   * @param data - The metadata to be indexed.
+   * @param context - The metadata to be indexed.
    * @returns A promise that resolves when the operation is complete.
    */
-  processIndex(session: string, data: MetaData): Promise<void>;
+  processIndex(session: Entities.SessionCallbackData, context: Entities.MetaDataContext): Promise<void>;
+
 
   /**
    * Processes the refinement of metadata for a given session.
    * @param session - The session identifier.
-   * @param data - The metadata to be refined.
+   * @param context - The metadata to be refined.
    * @returns A promise that resolves when the operation is complete.
    */
-  processRefine(session: string, data: MetaData): Promise<void>;
+  processRefine(session: Entities.SessionCallbackData, context: Entities.MetaDataContext): Promise<void>;
 
   /**
    * Processes calculations on metadata for a given session.
    * @param session - The session identifier.
-   * @param data - The metadata to be used for calculations.
+   * @param context - The metadata to be used for calculations.
    * @returns A promise that resolves when the operation is complete.
    */
-  processCalc(session: string, data: MetaData): Promise<void>;
+  processCalc(session: Entities.SessionCallbackData, context: Entities.MetaDataContext): Promise<void>;
 
   /**
    * Processes the provisioning of metadata for a given session.
    * @param session - The session identifier.
-   * @param data - The metadata to be provisioned.
+   * @param context - The metadata to be provisioned.
    * @returns A promise that resolves when the operation is complete.
    */
-  processProvision(session: string, data: MetaData): Promise<void>;
+  processProvision(session: Entities.SessionCallbackData, context: Entities.MetaDataContext): Promise<void>;
 
   /**
    * Processes the redaction of data for a given session.
    * @param session - The session identifier.
-   * @param data - The readable stream containing data to be redacted.
-   * @param type - The type of callback to be processed.
+   * @param context - The content containing the document data.
    * @returns A promise that resolves when the operation is complete.
    */
-  processRedact(session: string, data: Readable, type: string): Promise<void>;
+  processRedact(session: Entities.SessionCallbackData, context: Entities.ContentContext): Promise<void>;
 
   /**
    * Automatically processes the redaction of data for a given session.
    * @param session - The session identifier.
-   * @param data - The readable stream containing data to be auto-redacted.
-   * @param type - The type of callback to be processed.
+   * @param context - The content containing the document data.
    * @returns A promise that resolves when the operation is complete.
    */
-  processAutoRedact(session: string, data: Readable, type: string): Promise<void>;
+  processAutoRedact(session: Entities.SessionCallbackData, context: Entities.ContentContext): Promise<void>;
+
 
   /**
    * Processes the endorsement of data for a given session.
    * @param session - The session identifier.
-   * @param data - The readable stream containing data to be endorsed.
-   * @param type - The type of callback to be processed.
+   * @param context - The content containing the document data.
    * @returns A promise that resolves when the operation is complete.
    */
-  processEndorse(session: string, data: Readable, type: string): Promise<void>;
+  processEndorse(session: Entities.SessionCallbackData, context: Entities.ContentContext): Promise<void>;
 
   /**
    * Automatically records data for a given session.
    * @param session - The session identifier.
-   * @param data - The readable stream containing data to be auto-recorded.
-   * @param type - The type of callback to be processed.
+   * @param context - The content containing the document data for auto-recording.
    * @returns A promise that resolves when the operation is complete.
    */
-  processAutoRecord(session: string, data: Readable, type: string): Promise<void>;
+  processAutoRecord(session: Entities.SessionCallbackData, context: Entities.ContentContext): Promise<void>;
 
   /**
    * Records metadata for a given session and returns the resulting metadata.
@@ -90,5 +86,5 @@ export interface IIntegrationService {
    * @param metaData - The metadata to be recorded.
    * @returns A promise that resolves with the recorded metadata.
    */
-  record(session: string, data: MetaData): Promise<MetaData>;
+  record(session: string, metaData: string): Promise<string>;
 }

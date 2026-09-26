@@ -7,5 +7,13 @@ export * from "./indexClient"
 export * from "./trackingService"
 export * from "./blobService"
 export * from "./integrationService"
+export * from "./batchSourceRepository"
+export * from "./batchRepository"
+export * from "./taskExecutor"
+export * from "./indexTaskClient"
+export * from "./redactTaskClient"
+export * from "./batchClient"
+export * from "./taskExecutor"
+export * from "./logger"
 
 

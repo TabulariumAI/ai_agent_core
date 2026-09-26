@@ -8,11 +8,10 @@ import {
 } from "routing-controllers";
 import { Request, Response } from "express";
 import { Inject, Service } from "typedi";
+import * as Entities from "../../core/entities/imports";
 
 import { ControllerHelper } from "../utils/controllerHelper";
 import { BadRequestError } from "../../core/entities/error"
-import { MetaDataService } from "../../infrastructure/services/metaDataService";
-import { MetaData } from "../../core/entities/metadata";
 import { EndorseUseCase, EndorseData } from "../../application/useCases/endorseUseCase";
 
 /**
@@ -25,7 +24,6 @@ export class EndorseController {
     constructor(
         @Inject() private readonly helper: ControllerHelper,
         @Inject() private readonly useCase: EndorseUseCase,
-        @Inject() private readonly metaDataService: MetaDataService,
     ) { }
 
     /**
@@ -44,16 +42,12 @@ export class EndorseController {
     async endorse(
         @Req() req: Request, @Res() res: Response,
         @Param("session") session: string,
-        @Body() metaData: MetaData,
+        @Body() metaData: string,
     ) {
         return await this.helper.withErrorHandling(async () => {
-            // Validate metadata format
-            if (!metaData || !this.metaDataService.validateMetaData(metaData)) {
-                throw new BadRequestError("Invalid request: valid MetaData is required");
-            }
             // Execute the use case
             const data: EndorseData = {
-                session: session,
+                sessionData: new Entities.SessionCallbackData(session),
                 metaData: metaData
             }
             await this.useCase.execute(data);

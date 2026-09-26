@@ -8,12 +8,12 @@ import * as Entities from "../../core/entities/imports";
  * Contains session identifier and metadata.
  * This interface is used to pass data to the use case for processing the endorse operation.
  * @interface EndorseData
- * @property {string} session - The session identifier for the endorse process.
- * @property {Entities.MetaData} metaData - The metadata associated with the endorse operation.
+ * @property {Entities.SessionCallbackData} sessionData - The session callback data associated with the endorse process.
+ * @property {string | null} metaData - The metadata associated with the endorse operation.
  */
 export interface EndorseData {
-  session: string,
-  metaData: Entities.MetaData,
+  sessionData: Entities.SessionCallbackData,
+  metaData: string,
 }
 
 /** Use case for handling endorse operations.
@@ -37,6 +37,6 @@ export class EndorseUseCase {
       step: Entities.Step.ENDORSE
     };
 
-    await this.recordClient.endorseDocument(context, data.session, data.metaData, Entities.Callback.ENDORSE);
+    await this.recordClient.endorseDocument(context, data.sessionData, data.metaData, Entities.Callback.ENDORSE);
   }
 }

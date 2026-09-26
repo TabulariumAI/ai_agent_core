@@ -4,6 +4,7 @@ import {
     Req,
     Res,
     QueryParam,
+    QueryParams,
     Body,
     HeaderParam
 } from "routing-controllers";
@@ -13,6 +14,7 @@ import { Request, Response } from "express";
 import { Callback, CallbackData } from "../../core/entities/callback";
 import { ControllerHelper } from "../utils/controllerHelper";
 import { CalcCallbackUseCase, CalcCallbackData } from "../../application/useCases/calcCallbackUseCase";
+import { SessionQueryParams } from "../utils/sessionQueryParam";
 
 /**
  * Controller responsible for handling calc callbacks.
@@ -30,7 +32,7 @@ export class CalcCallbackController {
      * Handles calc callback.
      *
      * @route POST /callback/calc
-     * @param session - The session identifier from the query parameters
+     * @param session - The session information from the query parameters
      * @param token - The authorization token from the header
      * @param body - The callback data in the request body
      *
@@ -39,17 +41,18 @@ export class CalcCallbackController {
      * @returns 400 Bad Request - Invalid callback data
      */
     @Post(`/${Callback.CALC}`)
-    async index(
+    async calc(
         @Req() req: Request, @Res() res: Response,
-        @QueryParam("sn") session: string,
+        @QueryParams() sessionParam: SessionQueryParams,
         @HeaderParam("Authorization") token: string,
         @Body() callbackData: CallbackData
     ) {
-        const tokenData = `${Callback.CALC}?sn=${session}`;
+        const session = sessionParam.toSession();
+        const tokenData = `${Callback.CALC}?${session.getPath()}`;
         return await this.helper.withCallbackErrorHandling(tokenData, token, callbackData, async () => {
             // Execute the use case
             const data: CalcCallbackData = {
-                session: session,
+                sessionData: session,
                 callbackData: callbackData
             };
             await this.useCase.execute(data);

@@ -9,4 +9,13 @@ module.exports = {
     ...tsJestTransformCfg,
   },
   testPathIgnorePatterns: ["/node_modules/", "/dist/"],
+  collectCoverageFrom: ["src/**/*.ts", "!src/tests/**/*.ts", "!src/**/imports.ts"],
+  coverageThreshold: {
+    global: {
+      statements: 100,
+      branches: 100,
+      functions: 100,
+      lines: 100,
+    },
+  },
 };

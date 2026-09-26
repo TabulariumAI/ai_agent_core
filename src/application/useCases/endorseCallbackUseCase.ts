@@ -9,11 +9,11 @@ import * as Entities from "../../core/entities/imports";
  * Contains session identifier and callback data. 
  * This interface is used to pass data to the use case for processing the endorse callback.
  * @interface EndorseCallbackData
- * @property {string} session - The session identifier for the endorse process.
+ * @property {Entities.SessionCallbackData} sessionData - The session data associated with the endorse process, containing necessary information for processing.
  * @property {Entities.CallbackData} callbackData - The data associated with the callback, containing necessary information for processing.
  */
 export interface EndorseCallbackData {
-  session: string,
+  sessionData: Entities.SessionCallbackData,
   callbackData: Entities.CallbackData
 }
 
@@ -40,36 +40,48 @@ export class EndorseCallbackUseCase {
    * @param data - The data containing session identifier and callback data
    */
   async execute(data: EndorseCallbackData): Promise<void> {
+    if (data.callbackData.status != Entities.CallbackStatus.COMPLETED) {
+      if (data.callbackData.status == Entities.CallbackStatus.ERROR) {
+        {
+          const contentContext: Entities.ContentContext = { error: `Callback status is not completed: ${data.callbackData.data}` };
+          await this.trackingService.trackError(this.context, data.sessionData.id, `Callback status is not completed: ${data.callbackData.data}`);
+          await this.integrationService.processEndorse(data.sessionData, contentContext);
 
-    if (data.callbackData.status !== Entities.CallbackStatus.COMPLETED) {
-      await this.trackingService.trackError(this.context, data.session, `Callback status is not success: ${data.callbackData.data}`);
+        }
+        return;
+      }
+      return;
+    }
+    else if (!data.callbackData.types) {
+      const contentContext: Entities.ContentContext = { error: "Callback data type is missing" };
+      await this.trackingService.trackError(this.context, data.sessionData.id, "Callback data type is missing");
+      await this.integrationService.processEndorse(data.sessionData, contentContext);
       return;
     }
 
-    let stream: Readable;
-
+    let content: Entities.Content;
     try {
-      stream = await this.blobService.download(data.callbackData.data);
+      content = await this.blobService.downloadContent(data.callbackData.data, data.callbackData.types);
     }
     catch (error) {
-      await this.trackingService.trackError(this.context, data.session, `Error downloading blob: ${data.callbackData.data}`);
+      const contentContext: Entities.ContentContext = { error: (error as Error).message };
+      await this.trackingService.trackError(this.context, data.sessionData.id, `Error downloading blob: ${data.callbackData.data}`);
+      await this.integrationService.processEndorse(data.sessionData, contentContext);
       return;
     }
 
-    if (!data.callbackData.types) {
-      await this.trackingService.trackError(this.context, data.session, "Callback data type is missing");
-      return;
-    }
-
-    await this.trackingService.trackSuccess(this.context, data.session);
 
     // The processing should be done in the integration service 
     try {
-      await this.integrationService.processEndorse(data.session, stream, data.callbackData.types);
+      const contentContext: Entities.ContentContext = { content: content };
+      await this.integrationService.processEndorse(data.sessionData, contentContext);
     }
     catch (error) {
-      await this.trackingService.trackError(this.context, data.session, `Error processing endorse: ${error instanceof Error ? error.message : String(error)}`);
+      const contentContext: Entities.ContentContext = { error: (error as Error).message };
+      await this.trackingService.trackError(this.context, data.sessionData.id, `Error processing endorse: ${(error as Error).message}`);
+      await this.integrationService.processEndorse(data.sessionData, { error: (error as Error).message } as Entities.ContentContext);
       return;
     }
+    await this.trackingService.trackSuccess(this.context, data.sessionData.id);
   }
 }

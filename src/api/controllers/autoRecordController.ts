@@ -60,6 +60,7 @@ export class AutoRecordController {
       const data: AutoRecordData = {
         documentType: fileType,
         stream: Readable.from(file.buffer),
+        
       }
       const session = await this.useCase.execute(data);
       return { session: session };

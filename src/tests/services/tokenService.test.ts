@@ -57,4 +57,12 @@ describe('TokenService', () => {
         const token2 = tokenService2.sign(testData);
         expect(token1).not.toEqual(token2);
     });
+
+    it('uses the fallback secret when TOKEN_SECRET is unset', () => {
+        delete process.env.TOKEN_SECRET;
+        const fallbackService = new TokenService();
+        const token = fallbackService.sign(testData);
+
+        expect(fallbackService.validate(testData, token)).toBe(true);
+    });
 });

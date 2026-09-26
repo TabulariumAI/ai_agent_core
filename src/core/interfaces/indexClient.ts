@@ -8,11 +8,12 @@ export interface IIndexClient {
     /**
      * Indexes a document with the specified choices and callback.
      * @param context - The workflow context containing workflow and step information.
-     * @param session - The session identifier for the document.
+     * @param sessionCallbackData - The session and task information for the document.
      * @param document - The document to index.
      * @param choice - The choices associated with the document.
      * @param callback - The callback type for the operation.
+     * @param taskCallbackData - The additional data for callback, if any.
      * @returns A promise that resolves when the indexing is complete.
      */
-    indexDocument(context:Entities.WorkflowContext, session: string, document: string, choice: Entities.ChoiceItem[], callback: string): Promise<void>;
+    indexDocument(context:Entities.WorkflowContext, sessionCallbackData: Entities.SessionCallbackData, document: string, choice: Entities.ChoiceItem[], callback: string): Promise<void>;
 }

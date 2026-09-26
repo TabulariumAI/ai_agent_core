@@ -8,11 +8,9 @@ import {
 } from "routing-controllers";
 import { Request, Response } from "express";
 import { Inject, Service } from "typedi";
-
+import * as Entities from "../../core/entities/imports";
 import { ControllerHelper } from "../utils/controllerHelper";
-import { BadRequestError } from "../../core/entities/error"
-import { MetaDataService } from "../../infrastructure/services/metaDataService";
-import { MetaData } from "../../core/entities/metadata";
+import { BadRequestError } from "../../core/entities/error";
 import { RedactUseCase, RedactData } from "../../application/useCases/redactUseCase";
 
 /**
@@ -25,7 +23,6 @@ export class RedactController {
     constructor(
         @Inject() private readonly helper: ControllerHelper,
         @Inject() private readonly useCase: RedactUseCase,
-        @Inject() private readonly metaDataService: MetaDataService,
     ) { }
 
     /**
@@ -45,19 +42,12 @@ export class RedactController {
     async redact(
         @Req() req: Request, @Res() res: Response,
         @Param("session") session: string,
-        @Body() metaData: MetaData | null,
+        @Body() metaData: string | null,
     ) {
         return await this.helper.withErrorHandling(async () => {
-            // Validate metadata format
-            if (!metaData || Object.keys(metaData).length === 0) {
-                metaData = null; 
-            }
-            if (metaData && !this.metaDataService.validateMetaData(metaData)) {
-                throw new BadRequestError("Invalid request: valid MetaData is required");
-            }
             // Execute the use case
             const data: RedactData = {
-                session: session,
+                sessionData: new Entities.SessionCallbackData(session),
                 metaData: metaData
             }
             await this.useCase.execute(data);

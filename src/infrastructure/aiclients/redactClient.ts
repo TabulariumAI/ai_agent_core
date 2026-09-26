@@ -5,7 +5,7 @@ import * as Entities from "../../core/entities/imports";
 import { IRedactClient } from "../../core/interfaces/imports";
 import { TokenService } from "../services/tokenService";
 import { Config } from "../../config";
-import { FileTypeService } from "../services/imports";
+import { FileTypeService } from "../services/fileTypeService";
 
 
 
@@ -22,11 +22,11 @@ export class RedactClient implements IRedactClient {
         //@Inject(TOKENS.ITrackingService) private readonly trackingService: ITrackingService,
     ) { }
 
-    async redactDocument(context: Entities.WorkflowContext, session: string, metaData: Entities.MetaData | null, callback: Entities.Callback): Promise<void> {
-        const url = Config.redact.document(session);
+    async redactDocument(context: Entities.WorkflowContext, sessionCallbackData: Entities.SessionCallbackData, metaData: string | null, callback: Entities.Callback): Promise<void> {
+        const url = Config.redact.document(sessionCallbackData.id);
         const format = Config.formats.redactFormat;
 
-        const path = `${callback}?sn=${session}`;
+        let path = `${callback}?${sessionCallbackData.getPath()}`;
         const token = this.tokenService.sign(path);
 
         const response = await fetch(url, {

@@ -8,12 +8,12 @@ import * as Entities from "../../core/entities/imports";
 /** * Data structure for auto-record index callback use case.
  * Contains session identifier and callback data.
  * @interface AutoRecordCallbackIndexData
- * @property {string} session - The session identifier for the callback.
+ * @property {Entities.SessionCallbackData} sessionData - The session information for the callback.
  * @property {Entities.CallbackData} callbackData - The data associated with the callback.
  * * This interface is used to pass data to the use case for processing auto-record index callbacks.
  */
 export interface AutoRecordCallbackIndexData {
-  session: string,
+  sessionData: Entities.SessionCallbackData,
   callbackData: Entities.CallbackData
 }
 
@@ -44,14 +44,24 @@ export class AutoRecordCallbackIndexUseCase {
    * @param data - The data containing session and callback information
    */
   async execute(data: AutoRecordCallbackIndexData): Promise<void> {
+    
+    if (data.callbackData.status != Entities.CallbackStatus.COMPLETED) {
+      if (data.callbackData.status == Entities.CallbackStatus.ERROR) {
+        {
+          await this.trackingService.trackError(this.context, data.sessionData.id, `Auto-record index callback status is not completed: ${data.callbackData.data}`);
+        }
+        return;
+      }
+      return;
+    }
 
-    await this.trackingService.trackSuccess(this.context, data.session);
+    await this.trackingService.trackSuccess(this.context, data.sessionData.id);
 
     try {
-      await this.computeClient.calcDocument(this.context, data.session, null, Entities.Callback.AUTORECORD_CALC);
+      await this.computeClient.calcDocument(this.context, data.sessionData, null, Entities.Callback.AUTORECORD_CALC);
     }
     catch (error) {
-      await this.trackingService.trackError(this.nextContext, data.session, error instanceof Error ? error.message : String(error));
+      await this.trackingService.trackError(this.nextContext, data.sessionData.id, error instanceof Error ? error.message : String(error));
       return;
     }
   }

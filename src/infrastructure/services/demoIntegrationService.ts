@@ -1,17 +1,13 @@
-import { Service } from "typedi";
-import { Readable, pipeline } from "stream";
-import { promisify } from "util";
-import { v4 as uuidv4 } from "uuid";
-
-const pipelineAsync = promisify(pipeline);
-
-import { IIntegrationService } from "../../core/interfaces/integrationService";
-import { MetaData } from "../../core/entities/metadata";
+import { Inject, Service } from "typedi";
 import * as fs from "fs";
 import * as path from "path";
-import { Workflow } from "../../core/entities/workflowContext";
-import { CallbackType } from "../../core/entities/imports";
+
+import * as Entities from "../../core/entities/imports";
+import * as Interfaces from "../../core/interfaces/imports";
+import { FileTypeService } from "./fileTypeService";
 import { CallbackService } from "./callbackService";
+import { TOKENS } from "../../core/tokens";
+
 
 
 /**
@@ -20,7 +16,13 @@ import { CallbackService } from "./callbackService";
  * It simulates the behavior of an integration service without performing any actual operations.
  */
 @Service()
-export class DemoIntegrationService implements IIntegrationService {
+export class DemoIntegrationService implements Interfaces.IIntegrationService {
+
+    constructor(
+        @Inject() private readonly fileTypeService: FileTypeService,
+        @Inject() private readonly callbackService: CallbackService,
+        @Inject(TOKENS.ILogger) private readonly logger: Interfaces.ILogger,
+    ) { }
 
     /** Saves JSON data to a file in the specified session and directory.
      * @param session - The session identifier.
@@ -30,7 +32,7 @@ export class DemoIntegrationService implements IIntegrationService {
      * @return A promise that resolves to the full path of the saved file.
      * @throws Error if there is an issue creating directories or writing the file.
      */
-    private async saveJson(session: string, dir: string, file: string, data: any): Promise<string> {
+    private async saveMetadataJson(session: string, dir: string, file: string, data: any): Promise<string> {
         const outputDir = path.resolve(__dirname, `../../../mock-data/${session}/${dir}`);
         try {
             const fullPath = path.join(outputDir, file);
@@ -38,7 +40,6 @@ export class DemoIntegrationService implements IIntegrationService {
             await fs.promises.writeFile(fullPath, JSON.stringify(data, null, 2));
             return fullPath;
         } catch (error) {
-            console.error("Error creating directories:", error);
             throw new Error("Failed to save Json file");
         }
     }
@@ -51,138 +52,150 @@ export class DemoIntegrationService implements IIntegrationService {
      * @return A promise that resolves to the full path of the saved file.
      * @throws Error if there is an issue creating directories or writing the file.
      */
-    private async saveDocument(session: string, dir: string, file: string, data: Readable): Promise<string> {
+    private async saveDocument(session: string, dir: string, file: string, content: Entities.Content): Promise<string> {
         const outputDir = path.resolve(__dirname, `../../../mock-data/${session}/${dir}`);
-        const fullPath = path.join(outputDir, file);
+        const fileName = `document.${this.fileTypeService.getFileType(content.documentType)}`;
+        const fullPath = path.join(outputDir, fileName);
         try {
             await fs.promises.mkdir(outputDir, { recursive: true });
         } catch (error) {
-            console.error("Error creating directory:", error);
+            this.logger.error(`Error creating directory: ${error}`);
             throw new Error(`Failed to create directory: ${outputDir}`);
         }
         try {
-            const writeStream = fs.createWriteStream(fullPath);
-            await pipelineAsync(data, writeStream);
+            await fs.promises.writeFile(fullPath, content.data);
             return fullPath;
         } catch (error) {
-            console.error("Error saving document:", error);
+            this.logger.error(`Error saving document: ${error}`);
             throw new Error(`Failed to save document: ${fullPath}`);
         }
     }
 
     /** Processes the index step by saving metadata to a JSON file.
      * @param session - The session identifier.
-     * @param data - The metadata to save.
+     * @param context - The metadata to save.
      * @return A promise that resolves when the metadata is saved.
      * @throws Error if there is an issue saving the metadata.
      */
-    async processIndex(session: string, data: MetaData): Promise<void> {
-        const fullPath = await this.saveJson(session, "index", "metadata.json", data);
-        console.log(`Info: workflow:${Workflow.INDEX}, session: ${session}. Metadata saved to ${fullPath}`);
+    async processIndex(session: Entities.SessionCallbackData, context: Entities.MetaDataContext): Promise<void> {
+        if(context.metaData) {
+            const fullPath = await this.saveMetadataJson(session.id, "index", "metadata.json", context.metaData);
+            this.logger.info(`Info: workflow:${Entities.Workflow.INDEX}, session: ${session.id}. Metadata saved to ${fullPath}`);
+        }
     }
+
 
     /** Processes the refine step by saving metadata to a JSON file.
      * @param session - The session identifier.
-     * @param data - The metadata to save.
+     * @param context - The metadata to save.
+     * @param additionalData - Optional additional data for the callback.
      * @return A promise that resolves when the metadata is saved.
      * @throws Error if there is an issue saving the metadata.
      */
-    async processRefine(session: string, data: MetaData): Promise<void> {
-        const fullPath = await this.saveJson(session, "refine", "metadata.json", data);
-        console.log(`Info: workflow:${Workflow.REPROCESS}, session: ${session}. Metadata saved to ${fullPath}`);
+    async processRefine(session: Entities.SessionCallbackData, context: Entities.MetaDataContext): Promise<void> {
+        if(context.metaData) {
+            const fullPath = await this.saveMetadataJson(session.id, "refine", "metadata.json", context.metaData);
+            this.logger.info(`Info: workflow:${Entities.Workflow.REPROCESS}, session: ${session.id}. Metadata saved to ${fullPath}`);
+        }
     }
 
     /** Processes the calc step by saving metadata to a JSON file.
      * @param session - The session identifier.
-     * @param data - The metadata to save.
+     * @param context - The metadata to save.
      * @return A promise that resolves when the metadata is saved.
      * @throws Error if there is an issue saving the metadata.
      */
-    async processCalc(session: string, data: MetaData): Promise<void> {
-        const fullPath = await this.saveJson(session, "calc", "metadata.json", data);
-        console.log(`Info: workflow:${Workflow.CALC}, session: ${session}. Metadata saved to ${fullPath}`);
+    async processCalc(session: Entities.SessionCallbackData, context: Entities.MetaDataContext): Promise<void> {
+        if(context.metaData) {
+            const fullPath = await this.saveMetadataJson(session.id, "calc", "metadata.json", context.metaData);
+            this.logger.info(`Info: workflow:${Entities.Workflow.CALC}, session: ${session.id}. Metadata saved to ${fullPath}`);
+        }
     }
 
     /** Processes the provision step by saving metadata to a JSON file.
      * @param session - The session identifier.
-     * @param data - The metadata to save.
+     * @param context - The metadata to save.
      * @return A promise that resolves when the metadata is saved.
      * @throws Error if there is an issue saving the metadata.
      */
-    async processProvision(session: string, data: MetaData): Promise<void> {
-        const fullPath = await this.saveJson(session, "provision", "metadata.json", data);
-        console.log(`Info: workflow:${Workflow.PROVISION}, session: ${session}. Metadata saved to ${fullPath}`);
+    async processProvision(session: Entities.SessionCallbackData, context: Entities.MetaDataContext): Promise<void> {
+        if(context.metaData) {
+            const fullPath = await this.saveMetadataJson(session.id, "provision", "metadata.json", context.metaData);
+            this.logger.info(`Info: workflow:${Entities.Workflow.PROVISION}, session: ${session.id}. Metadata saved to ${fullPath}`);
+        }
     }
 
     /** Processes the redact step by saving a document.
      * @param session - The session identifier.
-     * @param data - The Readable stream containing the document data.
-     * @param type - The type of callback to be processed.
+     * @param context - The content containing the document data.
      * @return A promise that resolves when the document is saved.
      * @throws Error if there is an issue saving the document.
      */
-    async processRedact(session: string, data: Readable, type: string): Promise<void> {
-        const callbackService = new CallbackService();
-        const fullPath = await this.saveDocument(session, "redact", callbackService.getCallbackDataFile(type), data);
-        console.log(`Info: workflow:${Workflow.REDACT}, session: ${session}. Document saved to ${fullPath}`);
+    async processRedact(session: Entities.SessionCallbackData, context: Entities.ContentContext): Promise<void> {
+        if(context.content) {
+            const fullPath = await this.saveDocument(session.id, "redact", this.callbackService.getCallbackDataFile(context.content.documentType), context.content);
+            this.logger.info(`Info: workflow:${Entities.Workflow.REDACT}, session: ${session.id}. Document saved to ${fullPath}`);
+        }
     }
 
     /** Processes the auto-redact step by saving a document.
      * @param session - The session identifier.
-     * @param data - The Readable stream containing the document data.
-     * @param type - The type of callback to be processed.
+     * @param context - The content containing the document data.
      * @return A promise that resolves when the document is saved.
      * @throws Error if there is an issue saving the document.
      */
-    async processAutoRedact(session: string, data: Readable, type: string): Promise<void> {
-        const callbackService = new CallbackService();
-        const fullPath = await this.saveDocument(session, "autoredact", callbackService.getCallbackDataFile(type), data);
-        console.log(`Info: workflow:${Workflow.AUTOREDACT}, session: ${session}. Document saved to ${fullPath}`);
+    async processAutoRedact(session: Entities.SessionCallbackData, context: Entities.ContentContext): Promise<void> {
+        if(context.content) {
+            const fullPath = await this.saveDocument(session.id, "autoredact", this.callbackService.getCallbackDataFile(context.content.documentType), context.content);
+            this.logger.info(`Info: workflow:${Entities.Workflow.AUTOREDACT}, session: ${session.id}. Document saved to ${fullPath}`);
+        }
     }
+
 
     /** Processes the endorse step by saving a document.
      * @param session - The session identifier.
-     * @param data - The Readable stream containing the document data.
-     * @param type - The type of callback to be processed.
+     * @param context - The content containing the document data.
      * @return A promise that resolves when the document is saved.
      * @throws Error if there is an issue saving the document.
      */
-    async processEndorse(session: string, data: Readable, type: string): Promise<void> {
-        const callbackService = new CallbackService();
-        const fullPath = await this.saveDocument(session, "endorse", callbackService.getCallbackDataFile(type), data);
-        console.log(`Info: workflow:${Workflow.ENDORSE}, session: ${session}. Document saved to ${fullPath}`);
+    async processEndorse(session: Entities.SessionCallbackData, context: Entities.ContentContext): Promise<void> {
+        if (context.content) {
+            const fullPath = await this.saveDocument(session.id, "endorse", this.callbackService.getCallbackDataFile(context.content.documentType), context.content);
+            this.logger.info(`Info: workflow:${Entities.Workflow.ENDORSE}, session: ${session.id}. Document saved to ${fullPath}`);
+        }
     }
 
     /** Processes the auto-record step by saving a document.
      * @param session - The session identifier.
-     * @param data - The Readable stream containing the document data.
-     * @param type - The type of callback to be processed.
+     * @param context - The content containing the document data.
      * @return A promise that resolves when the document is saved.
      * @throws Error if there is an issue saving the document.
      */
-    async processAutoRecord(session: string, data: Readable, type: string): Promise<void> {
-        const callbackService = new CallbackService();
-        const fullPath = await this.saveDocument(session, "autorecord", callbackService.getCallbackDataFile(type), data);
-        console.log(`Info: workflow:${Workflow.AUTORECORD}, session: ${session}. Document saved to ${fullPath}`);
+    async processAutoRecord(session: Entities.SessionCallbackData, context: Entities.ContentContext): Promise<void> {
+        if (context.content) {
+            const fullPath = await this.saveDocument(session.id, "autorecord", this.callbackService.getCallbackDataFile(context.content.documentType), context.content);
+            this.logger.info(`Info: workflow:${Entities.Workflow.AUTORECORD}, session: ${session.id}. Document saved to ${fullPath}`);
+        }
     }
 
     /** Records metadata for a document.
      * @param session - The session identifier.
-     * @param data - The metadata to record.
+     * @param metaData - The metadata to record.
      * @return A promise that resolves to the recorded metadata.
      * @throws Error if there is an issue recording the metadata.
      */
-    async record(session: string, data: MetaData): Promise<MetaData> {
+    async record(session: string, metaData: string): Promise<string> {
         // Title should be mapped to your document internal type
         // Number should be generated in your internal number pool
         // Date should be in an acceptable format
 
-        console.log(`Record: session: ${session}`);
+        this.logger.info(`Record: session: ${session}`);
+        const data = JSON.parse(metaData);
+
         data.heading.number = (Math.floor(Math.random() * 900) + 100).toString();
-        data.heading.title = data.heading.title; // Should be mapped to your document type
         data.heading.date = new Date().toISOString();
 
-        return data;
+        return JSON.stringify(data);
     }
 
 

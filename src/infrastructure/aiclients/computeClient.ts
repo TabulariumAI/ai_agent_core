@@ -22,11 +22,11 @@ export class ComputeClient implements IComputeClient {
     ) {}
 
 
-    async calcDocument(context: Entities.WorkflowContext, session: string, metaData: Entities.MetaData | null, callback: Entities.Callback): Promise<void> {
+    async calcDocument(context: Entities.WorkflowContext, sessionCallbackData: Entities.SessionCallbackData, metaData: string | null, callback: Entities.Callback): Promise<void> {
 
-        const url = Config.compute.calculate(session);
+        const url = Config.compute.calculate(sessionCallbackData.id);
 
-        const path = `${callback}?sn=${session}`;
+        const path = `${callback}?${sessionCallbackData.getPath()}`;
         const token = this.tokenService.sign(path);
 
         const response = await fetch(url, {

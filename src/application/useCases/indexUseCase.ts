@@ -4,8 +4,8 @@ import { Readable } from "stream";
 import { TOKENS } from "../../core/tokens";
 import * as Interfaces from "../../core/interfaces/imports";
 import * as Entities from "../../core/entities/imports";
-import { UseCaseHelper } from "../utils/useCaseHelper";
-import { indexChoice } from "./choices/indexChoice";
+import { indexChoice } from "../../core/entities/choices/indexChoice";
+import { IndexService } from "../../infrastructure/services/indexService";
 
 /** Data structure for index use case.
  * Contains document type and stream.
@@ -32,7 +32,7 @@ export class IndexUseCase {
     constructor(
         @Inject(TOKENS.IBlobService) private readonly blobService: Interfaces.IBlobService,
         @Inject(TOKENS.ITrackingService) private readonly trackingService: Interfaces.ITrackingService,
-        @Inject() private readonly helper: UseCaseHelper,
+        @Inject() private readonly indexService: IndexService,
     ) { }
 
     /**
@@ -42,7 +42,7 @@ export class IndexUseCase {
      * @returns {Promise<string>} - Returns the session identifier for the indexed document
      */
     async execute(data: IndexData): Promise<string> {
-        const session = await this.helper.index(this.context, data.documentType, data.stream, indexChoice.items, Entities.Callback.INDEX);
+        const session = await this.indexService.index(this.context, data.documentType, data.stream, indexChoice.items, Entities.Callback.INDEX);
         return session;
     }
 }

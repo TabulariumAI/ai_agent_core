@@ -8,12 +8,12 @@ import * as Entities from "../../core/entities/imports";
  * Contains session identifier and metadata.
  * This interface is used to pass data to the use case for processing the calc operation.
  * @interface CalcData
- * @property {string} session - The session identifier for the calc process.
+ * @property {Entities.SessionCallbackData} sessionData - The session callback data associated with the calc process.
  * @property {Entities.MetaData | null} metaData - The metadata associated with the calc operation, can be null if not available.
  */
 export interface CalcData {
-    session: string,
-    metaData: Entities.MetaData | null
+    sessionData: Entities.SessionCallbackData,
+    metaData: string | null,
 }
 
 /** Use case for handling calc operations.
@@ -37,9 +37,7 @@ export class CalcUseCase {
             step: Entities.Step.CALC
         };
 
-        console.log(`Executing CalcUseCase for session: ${data.session}`);
-
-        await this.computeClient.calcDocument(context, data.session, data.metaData, Entities.Callback.CALC);
+        await this.computeClient.calcDocument(context, data.sessionData, data.metaData, Entities.Callback.CALC);
     }
 
 }

@@ -6,7 +6,7 @@ import { TokenService } from "../services/tokenService";
 import { IRecordClient } from "../../core/interfaces/recordClient";
 import { Config } from "../../config";
 import { types } from "util";
-import { FileTypeService } from "../services/imports";
+import { FileTypeService } from "../services/fileTypeService";
 
 
 
@@ -24,11 +24,11 @@ export class RecordClient implements IRecordClient {
     ) { }
 
 
-    async endorseDocument(context: Entities.WorkflowContext, session: string, metaData: Entities.MetaData, callback: Entities.Callback): Promise<void> {
-        const url = Config.record.document(session);
+    async endorseDocument(context: Entities.WorkflowContext, sessionCallbackData: Entities.SessionCallbackData, metaData: string, callback: Entities.Callback, taskCallbackData?: Entities.TaskCallbackData): Promise<void> {
+        const url = Config.record.document(sessionCallbackData.id);
         const format = Config.formats.recordFormat;
         
-        const path = `${callback}?sn=${session}`;
+        let path = `${callback}?${sessionCallbackData.getPath()}`;
         const token = this.tokenService.sign(path);
 
         const response = await fetch(url, {

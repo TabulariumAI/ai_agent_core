@@ -1,11 +1,11 @@
 import { Service, Inject } from "typedi";
 import { v4 as uuidv4 } from "uuid";
 
-import * as Services from "../services/imports"
+import { TokenService } from "../services/tokenService";
 import * as Entities from "../../core/entities/imports";
 import * as Interfaces from "../../core/interfaces/imports";
 
-const metaData: Entities.MetaData = {
+const metaData: string = JSON.stringify({
     heading: {
         title: "Mock Document",
         class: "class",
@@ -13,7 +13,7 @@ const metaData: Entities.MetaData = {
     },
     secrets: [],
     indexes: [],
-};
+});
 
 @Service()
 export class MockTabulariumClient implements
@@ -26,7 +26,7 @@ export class MockTabulariumClient implements
      {
 
     constructor(
-        @Inject() private readonly tokenService: Services.TokenService,
+        @Inject() private readonly tokenService: TokenService,
     ) {
     }
     async getSession(context: Entities.WorkflowContext, sessionId: string): Promise<Entities.SessionToken> {
@@ -41,8 +41,8 @@ export class MockTabulariumClient implements
         return uuidv4().toString();
     }
 
-    async indexDocument(context: Entities.WorkflowContext, session: string, document: string, choice: Entities.ChoiceItem[], callback: Entities.Callback): Promise<void> {
-        const data = `sn=${session}`;
+    async indexDocument(context: Entities.WorkflowContext, sessionCallbackData: Entities.SessionCallbackData, document: string, choice: Entities.ChoiceItem[], callback: Entities.Callback): Promise<void> {
+        const data = `sn=${JSON.stringify(sessionCallbackData)}`;
         const token = this.tokenService.sign(data);
         const url = `${process.env.CALLBACK_URL}/${callback}?${data}`;
         const result: Entities.CallbackData = {
@@ -61,8 +61,8 @@ export class MockTabulariumClient implements
     }
 
 
-    async reprocessDocument(context: Entities.WorkflowContext, session: string, segment: string, callback: Entities.Callback): Promise<void> {
-        const data = `sn=${session}`;
+    async reprocessDocument(context: Entities.WorkflowContext, sessionCallbackData: Entities.SessionCallbackData, segment: string, callback: Entities.Callback): Promise<void> {
+        const data = `sn=${JSON.stringify(sessionCallbackData)}`;
         const token = this.tokenService.sign(data);
         const url = `${process.env.CALLBACK_URL}/${callback}?${data}`;
         const result: Entities.CallbackData = {
@@ -80,8 +80,8 @@ export class MockTabulariumClient implements
         });
     }
 
-    async calcDocument(context: Entities.WorkflowContext, session: string, metaData: Entities.MetaData | null, callback: Entities.Callback): Promise<void> {
-        const data = `sn=${session}`;
+    async calcDocument(context: Entities.WorkflowContext, sessionCallbackData: Entities.SessionCallbackData, metaData: string | null, callback: Entities.Callback): Promise<void> {
+        const data = `sn=${JSON.stringify(sessionCallbackData)}`;
         const token = this.tokenService.sign(data);
         const url = `${process.env.CALLBACK_URL}/${callback}?${data}`;
         const result: Entities.CallbackData = {
@@ -99,8 +99,8 @@ export class MockTabulariumClient implements
         });
     }
 
-    async redactDocument(context: Entities.WorkflowContext, session: string, metaData: Entities.MetaData | null, callback: Entities.Callback): Promise<void> {
-        const data = `sn=${session}`;
+    async redactDocument(context: Entities.WorkflowContext, sessionCallbackData: Entities.SessionCallbackData, metaData: string | null, callback: Entities.Callback): Promise<void> {
+        const data = `sn=${JSON.stringify(sessionCallbackData)}`;
         const token = this.tokenService.sign(data);
         const url = `${process.env.CALLBACK_URL}/${callback}?${data}`;
         const result: Entities.CallbackData = {
@@ -138,8 +138,8 @@ export class MockTabulariumClient implements
     }
 
 
-    async endorseDocument(context: Entities.WorkflowContext, session: string, metaData: Entities.MetaData, callback: Entities.Callback): Promise<void> {
-        const data = `sn=${session}`;
+    async endorseDocument(context: Entities.WorkflowContext, sessionCallbackData: Entities.SessionCallbackData, metaData: string, callback: Entities.Callback): Promise<void> {
+        const data = `sn=${JSON.stringify(sessionCallbackData)}`;
         const token = this.tokenService.sign(data);
         const url = `${process.env.CALLBACK_URL}/${callback}?${data}`;
         const result: Entities.CallbackData = {

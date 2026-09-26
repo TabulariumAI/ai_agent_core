@@ -12,7 +12,8 @@ export class FileTypeService {
      */
     private readonly mimeTypes: Map<string, string> = new Map([
         ["application/pdf", "pdf"],
-        ['image/tiff', "tiff"]
+        ['image/tiff', "tiff"],
+        ['application/json', "json"],
     ]);
     
     /**
@@ -28,6 +29,14 @@ export class FileTypeService {
             throw new Error(`Unsupported file type: ${contentType}`);
         }
         return type;
+    }
+
+    getMimeType(fileType: string): string {
+        const type = Array.from(this.mimeTypes.entries()).find(([_, value]) => value === fileType.trim().toLowerCase());
+        if (!type) {
+            throw new Error(`Unsupported file type: ${fileType}`);
+        }
+        return type[0];
     }
 
     /** Validates if the provided file type is supported.

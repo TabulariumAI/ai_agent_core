@@ -6,12 +6,13 @@ import * as Entities from '../entities/imports';
  */
 export interface IRecordClient {
     /**
-     * Endorses a document with metadata and callback.
+     * Endorses a document with metadata and callback, if any.
      * @param context - The workflow context containing workflow and step information.
-     * @param session - The session identifier for the document.
+     * @param sessionCallbackData - The session and task information for the document.
      * @param metaData - The metadata associated with the document, can be null if not available.
      * @param callback - The callback type for the operation.
+     * @param taskCallbackData - Additional data to be sent with the callback, if any.
      * @returns A promise that resolves when the endorsement is complete.
      */
-    endorseDocument(context:Entities.WorkflowContext, session: string, metaData: Entities.MetaData, callback: string): Promise<void>;
+    endorseDocument(context:Entities.WorkflowContext, sessionCallbackData: Entities.SessionCallbackData, metaData: string, callback: string): Promise<void>;
 }

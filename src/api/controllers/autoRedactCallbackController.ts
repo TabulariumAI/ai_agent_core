@@ -5,7 +5,8 @@ import {
     Res,
     QueryParam,
     Body,
-    HeaderParam
+    HeaderParam,
+    QueryParams
 } from "routing-controllers";
 import { Inject, Service } from "typedi";
 import { Request, Response } from "express";
@@ -14,6 +15,7 @@ import { Callback, CallbackData } from "../../core/entities/callback";
 import { ControllerHelper } from "../utils/controllerHelper";
 import { AutoRedactCallbackIndexUseCase, AutoRedactCallbackIndexData } from "../../application/useCases/autoRedactCallbackIndexUseCase";
 import { AutoRedactCallbackRedactUseCase, AutoRedactCallbackRedactData } from "../../application/useCases/autoRedactCallbackRedactUseCase";
+import { SessionQueryParams } from "../utils/sessionQueryParam";
 
 /**
  * Controller responsible for handling auto-redact callbacks.
@@ -32,7 +34,7 @@ export class AutoRedactCallbackController {
      * Handles auto-redact index callback.
      *
      * @route POST /callback/autoredact/index
-     * @param session - The session identifier from the query parameters
+     * @param session - The session information from the query parameters
      * @param token - The authorization token from the header
      * @param body - The callback data in the request body
      *
@@ -41,16 +43,17 @@ export class AutoRedactCallbackController {
      * @returns 400 Bad Request - Invalid callback data
      */
     @Post(`/${Callback.AUTOREDACT_INDEX}`)
-    async autoRedacIndex(
+    async autoRedactIndex(
         @Req() req: Request, @Res() res: Response,
-        @QueryParam("sn") session: string,
+        @QueryParams() sessionParam: SessionQueryParams,
         @HeaderParam("Authorization") token: string,
         @Body() callbackData: CallbackData
     ) {
-        const tokenData = `${Callback.AUTOREDACT_INDEX}?sn=${session}`;
+        const session = sessionParam.toSession();
+        const tokenData = `${Callback.AUTOREDACT_INDEX}?${session.getPath()}`;
         return await this.helper.withCallbackErrorHandling(tokenData, token, callbackData, async () => {
             // Execute the use case
-            const indexData: AutoRedactCallbackIndexData = { session: session, callbackData: callbackData };
+            const indexData: AutoRedactCallbackIndexData = { sessionData: session, callbackData: callbackData };
             await this.autoRedactCallbackIndexUseCase.execute(indexData);
         }, res);
     }
@@ -59,7 +62,7 @@ export class AutoRedactCallbackController {
      * Handles auto-redact redact callback.
      *
      * @route POST /callback/autoredact/redact
-     * @param session - The session identifier from the query parameters
+     * @param session - The session information from the query parameters
      * @param token - The authorization token from the header
      * @param body - The callback data in the request body
      *
@@ -70,14 +73,15 @@ export class AutoRedactCallbackController {
     @Post(`/${Callback.AUTOREDACT_REDACT}`)
     async autoRedactRedact(
         @Req() req: Request, @Res() res: Response,
-        @QueryParam("sn") session: string,
+        @QueryParams() sessionParam: SessionQueryParams,
         @HeaderParam("Authorization") token: string,
         @Body() callbackData: CallbackData
     ) {
-        const tokenData = `${Callback.AUTOREDACT_REDACT}?sn=${session}`;
+        const session = sessionParam.toSession();
+        const tokenData = `${Callback.AUTOREDACT_REDACT}?${session.getPath()}`;
         return await this.helper.withCallbackErrorHandling(tokenData, token, callbackData, async () => {
             // Execute the use case
-            const data: AutoRedactCallbackRedactData = { session: session, callbackData: callbackData };
+            const data: AutoRedactCallbackRedactData = { sessionData: session, callbackData: callbackData };
             await this.autoRedactCallbackRedactUseCase.execute(data);
         }, res);
     }

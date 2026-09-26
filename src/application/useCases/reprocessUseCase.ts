@@ -9,11 +9,11 @@ import * as Entities from "../../core/entities/imports";
  * Contains session identifier and segment information.
  * This interface is used to pass data to the use case for processing the reprocess operation.
  * @interface ReprocessData
- * @property {string} session - The session identifier for the reprocess process.
+ * @property {Entities.SessionCallbackData} sessionData - The session callback data associated with the reprocess process.
  * @property {string} segment - The segment of the document to be reprocessed.
  */
 export interface ReprocessData {
-  session: string,
+  sessionData: Entities.SessionCallbackData,
   segment: string,
 }
 
@@ -34,11 +34,11 @@ export class ReprocessUseCase {
   /**
    * Executes the use case for processing the reprocess operation.
    * 
-   * @param data - The data containing session identifier, segment, and message
+   * @param data - The data containing session identifier, segment, and task callback data
    */
   async execute(data: ReprocessData): Promise<void> {
 
     //const feedback = await this.feedbackClient.feedbackDocument(this.feedbackContext, data.session, data.segment, data.message);
-    await this.reprocessClient.reprocessDocument(this.context, data.session, data.segment, Entities.Callback.REPROCESS);
+    await this.reprocessClient.reprocessDocument(this.context, data.sessionData, data.segment, Entities.Callback.REPROCESS);
   }
 }

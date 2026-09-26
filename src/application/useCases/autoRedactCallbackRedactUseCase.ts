@@ -9,12 +9,12 @@ import * as Entities from "../../core/entities/imports";
  * Data structure for auto-redact callback redact use case.
  * Contains session identifier and callback data.
  * @interface AutoRedactCallbackRedactData
- * @property {string} session - The session identifier for the callback.
+ * @property {Entities.SessionCallbackData} sessionData - The session information for the callback.
  * @property {Entities.CallbackData} callbackData - The data associated with the callback.
  * This interface is used to pass data to the use case for processing auto-redact callbacks.
  */
 export interface AutoRedactCallbackRedactData {
-  session: string,
+  sessionData: Entities.SessionCallbackData,
   callbackData: Entities.CallbackData
 }
 
@@ -42,29 +42,49 @@ export class AutoRedactCallbackRedactUseCase {
    */
   async execute(data: AutoRedactCallbackRedactData): Promise<void> {
 
-    let stream: Readable;
+    if (data.callbackData.status != Entities.CallbackStatus.COMPLETED) {
+      if (data.callbackData.status == Entities.CallbackStatus.ERROR) {
+        {
+          const contentContext: Entities.ContentContext = { error: `Callback status is not completed: ${data.callbackData.data}` };
+          await this.trackingService.trackError(this.context, data.sessionData.id, `Callback status is not completed: ${data.callbackData.data}`);
+          await this.integrationService.processAutoRedact(data.sessionData, contentContext);
 
-    try {
-      stream = await this.blobService.download(data.callbackData.data);
-    }
-    catch (error) {
-      await this.trackingService.trackError(this.context, data.session, `Error downloading blob: ${data.callbackData.data}`);
-      return;
-    }
-    // The processing should be done in the integration service 
-    try {
-      if (!data.callbackData.types) {
-        await this.trackingService.trackError(this.context, data.session, "Callback data type is missing");
+        }
         return;
       }
-      
-      await this.trackingService.trackSuccess(this.context, data.session);
-
-      await this.integrationService.processAutoRedact(data.session, stream, data.callbackData.types);
-    }
-    catch (error) {
-      await this.trackingService.trackError(this.context, data.session, `Error processing auto-redact: ${error instanceof Error ? error.message : String(error)}`);
       return;
     }
+    else if (!data.callbackData.types) {
+      const contentContext: Entities.ContentContext = { error: "Callback data type is missing" };
+      await this.trackingService.trackError(this.context, data.sessionData.id, "Callback data type is missing");
+      await this.integrationService.processAutoRedact(data.sessionData, contentContext);
+      return;
+    }
+
+    let content: Entities.Content;
+    try {
+      content = await this.blobService.downloadContent(data.callbackData.data, data.callbackData.types);
+    }
+    catch (error) {
+      const contentContext: Entities.ContentContext = { error: (error as Error).message };
+      await this.trackingService.trackError(this.context, data.sessionData.id, `Error downloading blob: ${data.callbackData.data}`);
+      await this.integrationService.processAutoRedact(data.sessionData, contentContext);
+      return;
+    }
+
+
+    // The processing should be done in the integration service 
+    try {
+      const contentContext: Entities.ContentContext = { content: content };
+      await this.integrationService.processAutoRedact(data.sessionData, contentContext);
+    }
+    catch (error) {
+      const contentContext: Entities.ContentContext = { error: (error as Error).message };
+      await this.trackingService.trackError(this.context, data.sessionData.id, `Error processing redact: ${(error as Error).message}`);
+      await this.integrationService.processAutoRedact(data.sessionData, contentContext);
+      return;
+    }
+    await this.trackingService.trackSuccess(this.context, data.sessionData.id);
   }
+
 }

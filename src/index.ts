@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import express from "express";
 import { useContainer, useExpressServer } from "routing-controllers";
-import dotenv, { configDotenv } from "dotenv";
+import dotenv from "dotenv";
 
 import { setupContainer, Container } from "./di/container";
 import { IndexController } from "./api/controllers/indexController";
@@ -21,16 +21,10 @@ import { RedactCallbackController } from "./api/controllers/redactCallbackContro
 import { ReprocessController } from "./api/controllers/reprocessController";
 import { ReprocessCallbackController } from "./api/controllers/reprocessCallbackController";
 
-
-
-setupContainer(); 
-useContainer(Container);
-
-const app = express();
-//app.use(express.json());
-
-useExpressServer(app, {
-  controllers: [
+import { startIndexProcessor, startRedactProcessor } from "./application/processors/processorRegistry";
+import { RedactBatchProcessingController } from "./api/controllers/redactBatchProcessingController";
+import { IndexBatchProcessingController } from "./api/controllers/indexBatchProcessingController";
+const controllers = [
     IndexController, 
     IndexCallbackController,
     CalcController, 
@@ -47,15 +41,26 @@ useExpressServer(app, {
     AutoRecordCallbackController, 
     ProvisionController,
     ProvisionCallbackController,
+    IndexBatchProcessingController,
+    RedactBatchProcessingController,
+];
 
-  ],
-  defaultErrorHandler: false
-});
+export function createApp() {
+  const app = express();
+  useExpressServer(app, { controllers, defaultErrorHandler: false });
+  return app;
+}
 
+export function startServer(port = 3000) {
+  dotenv.config();
+  setupContainer();
+  useContainer(Container);
 
+  const app = createApp();
+  const server = app.listen(port, () => console.log(`API running on http://localhost:${port}`));
+  void startIndexProcessor();
+  void startRedactProcessor();
+  return server;
+}
 
-dotenv.config(); // Ensure .env file is loaded
-
-
-app.listen(3000, () => console.log("API running on http://localhost:3000"));
-export { app }; // Export the app for testing or further configuration
+export const app = createApp();

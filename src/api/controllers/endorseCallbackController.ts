@@ -5,7 +5,8 @@ import {
     Res,
     QueryParam,
     Body,
-    HeaderParam
+    HeaderParam,
+    QueryParams
 } from "routing-controllers";
 import { Inject, Service } from "typedi";
 import { Request, Response } from "express";
@@ -13,6 +14,7 @@ import { Request, Response } from "express";
 import { Callback, CallbackData } from "../../core/entities/callback";
 import { ControllerHelper } from "../utils/controllerHelper";
 import { EndorseCallbackUseCase, EndorseCallbackData } from "../../application/useCases/endorseCallbackUseCase";
+import { SessionQueryParams } from "../utils/sessionQueryParam";
 
 /**
  * Controller responsible for handling endorse callbacks.
@@ -30,7 +32,7 @@ export class EndorseCallbackController {
      * Handles endorse callback.
      *
      * @route POST /callback/endorse
-     * @param session - The session identifier from the query parameters
+     * @param session - The session information from the query parameters
      * @param token - The authorization token from the header
      * @param body - The callback data in the request body
      *
@@ -39,17 +41,18 @@ export class EndorseCallbackController {
      * @returns 400 Bad Request - Invalid callback data
      */
     @Post(`/${Callback.ENDORSE}`)
-    async index(
+    async endorse(
         @Req() req: Request, @Res() res: Response,
-        @QueryParam("sn") session: string,
+        @QueryParams() sessionParam: SessionQueryParams,
         @HeaderParam("Authorization") token: string,
         @Body() callbackData: CallbackData
     ) {
-        const tokenData = `${Callback.ENDORSE}?sn=${session}`;
+        const session = sessionParam.toSession();
+        const tokenData = `${Callback.ENDORSE}?${session.getPath()}`;
         return await this.helper.withCallbackErrorHandling(tokenData, token, callbackData, async () => {
             // Execute the use case
             const data: EndorseCallbackData = {
-                session: session,
+                sessionData: session,
                 callbackData: callbackData
             };
             await this.useCase.execute(data);

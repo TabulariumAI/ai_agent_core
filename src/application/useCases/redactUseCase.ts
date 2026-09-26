@@ -8,12 +8,12 @@ import * as Entities from "../../core/entities/imports";
  * Contains session identifier and metadata.
  * This interface is used to pass data to the use case for processing the redact operation.
  * @interface RedactData
- * @property {string} session - The session identifier for the redact process.
- * @property {Entities.MetaData | null} metaData - The metadata associated with the document, can be null if not available.
+ * @property {Entities.SessionCallbackData} sessionData - The session callback data for the redact process.
+ * @property {string | null} metaData - The metadata associated with the document, can be null if not available.
  */
 export interface RedactData {
-  session: string,
-  metaData: Entities.MetaData | null
+  sessionData: Entities.SessionCallbackData,
+  metaData: string | null,
 }
 
 /** Use case for handling redact operations.
@@ -36,6 +36,6 @@ export class RedactUseCase {
       step: Entities.Step.REDACT
     };
 
-    await this.redactClient.redactDocument(context, data.session, data.metaData, Entities.Callback.REDACT);
+    await this.redactClient.redactDocument(context, data.sessionData, data.metaData, Entities.Callback.REDACT);
   }
 }

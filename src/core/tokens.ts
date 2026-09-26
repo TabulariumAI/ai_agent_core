@@ -1,3 +1,5 @@
+import { Token } from "typedi";
+import * as Interfaces from "./interfaces/imports";
 
 export const TOKENS = {
   IBlobService: "IBlobService",
@@ -8,5 +10,19 @@ export const TOKENS = {
   IComputeClient: "IComputeClient",
   IIndexClient: "IIndexClient",
   IRecordClient: "IRecordClient",
-  ISessionClient: "ISessionClient"
+  ISessionClient: "ISessionClient",
+  ILogger: "ILogger",
+
+  IBatchSourceRepository: "IBatchSourceRepository",
+  IBatchRepository: "IBatchRepository",
+  ITaskRepository: "ITaskRepository",
+  IBatchClient: "IBatchClient",
+  IIndexTaskClient: "IIndexTaskClient",
+  IRedactTaskClient: "IRedactTaskClient",
+  IndexTaskExecutor: new Token<Interfaces.ITaskExecutor>("IndexTaskExecutor"),
+  RedactTaskExecutor: new Token<Interfaces.ITaskExecutor>("RedactTaskExecutor"),
+  IndexTaskProcessor: "IndexTaskProcessor",
+  RedactTaskProcessor: "RedactTaskProcessor",
+
+
 } as const;

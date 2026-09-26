@@ -8,7 +8,7 @@ import {
 } from "routing-controllers";
 import { Request, Response } from "express";
 import { Inject, Service } from "typedi";
-
+import * as Entities from "../../core/entities/imports";
 import { ControllerHelper } from "../utils/controllerHelper";
 import { BadRequestError } from "../../core/entities/error"
 import { SegmentService } from "../../infrastructure/services/segmentService";
@@ -54,7 +54,7 @@ export class ReprocessController {
             }
             // Execute the use case
             const data: ReprocessData = {
-                session: session,
+                sessionData: new Entities.SessionCallbackData(session),
                 segment: segment,
             }
             await this.useCase.execute(data);

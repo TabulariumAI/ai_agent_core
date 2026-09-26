@@ -19,9 +19,18 @@ export class Config {
 
 
     static readonly apiKey = this.require("API_KEY");
+    static readonly batchContainer = this.require("BATCH_CONTAINER");
+    static readonly batchIndexIn = this.require("BATCH_INDEX_IN");
+    static readonly batchIndexOut = this.require("BATCH_INDEX_OUT");
+    static readonly batchRedactIn = this.require("BATCH_REDACT_IN");
+    static readonly batchRedactOut = this.require("BATCH_REDACT_OUT");
+    static readonly processingDir = this.require("PROCESSING_DIR");
+    static readonly subscription = this.apiKey.split(":")[0];
+
 
     static readonly services = {
         callbackUrl: this.require("CALLBACK_URL"),
+        batchUrl: this.require("BATCH_URL"),
         session: this.require("SESSION_URL"),
         compute: this.require("COMPUTE_URL"),
         index: this.require("INDEX_URL"),
@@ -35,13 +44,18 @@ export class Config {
         recordFormat: this.value("RECORD_FORMAT"),
         redactFormat: this.value("REDACT_FORMAT"),
     };
-   
+
     static callback = {
         url: (path: string): string => `${this.services.callbackUrl}/${path}`
     };
 
+    static batch = {
+        session: (): string => `${this.services.batchUrl}/subscription/${this.subscription}/batches/sessions/new`
+    };
+
+
     static session = {
-        get: (session: string):  string => `${this.services.session}/session/${session}/data`,
+        get: (session: string): string => `${this.services.session}/session/${session}/data`,
         create: (): string => `${this.services.session}/session/new`,
     };
 
@@ -56,7 +70,7 @@ export class Config {
     static record = {
         document: (session: string): string => `${this.services.record}/record/${session}/endorsement`
     };
-    
+
     static redact = {
         document: (session: string): string => `${this.services.redact}/redact/${session}/mask`
     };

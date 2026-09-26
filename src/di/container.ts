@@ -3,21 +3,22 @@ import { Container } from "typedi";
 import { TOKENS } from "../core/tokens";
 import * as Interfaces from "../core/interfaces/imports";
 import * as Services from "../infrastructure/services/imports";
+import * as Repositories from "../infrastructure/repositories/imports";
 import * as AIClients from "../infrastructure/aiclients/imports";
+import { IndexTaskProcessor } from "../application/processors/indexTaskProcessor";
+import { RedactTaskProcessor } from "../application/processors/redactTaskProcessor";
+import { TaskProcessor } from "../application/processors/taskProcessor";
+import { BatchClient } from "../infrastructure/services/imports";
 
 export function setupContainer() {
-    Container.set(Services.ChoiceService, new Services.ChoiceService());
-    Container.set(Services.FileTypeService, new Services.FileTypeService());
-    Container.set(Services.SegmentService, new Services.SegmentService());
-    Container.set(Services.StreamService, new Services.StreamService());
-    Container.set(Services.TokenService, new Services.TokenService());
-    Container.set(Services.MetaDataService, new Services.MetaDataService(
-        Container.get(Services.StreamService))
-    );
-    Container.set<Interfaces.IBlobService>(TOKENS.IBlobService, new Services.AzureBlobService());
-    Container.set<Interfaces.IIntegrationService>(TOKENS.IIntegrationService, new Services.DemoIntegrationService());
-    Container.set<Interfaces.ITrackingService>(TOKENS.ITrackingService, new Services.DemoTrackingService());
-    
+    Container.set<Interfaces.ILogger>(TOKENS.ILogger, Container.get(Services.ConsoleLogger));
+    Container.set<Interfaces.IBatchRepository>(TOKENS.IBatchRepository, Container.get(Repositories.FsBatchRepository));
+    Container.set<Interfaces.IBatchSourceRepository>(TOKENS.IBatchSourceRepository, Container.get(Repositories.AzureBatchSourceRepository));
+
+    Container.set<Interfaces.IBlobService>(TOKENS.IBlobService, Container.get(Services.AzureBlobService));
+    Container.set<Interfaces.IIntegrationService>(TOKENS.IIntegrationService, Container.get(Services.DemoBatchIntegrationService));
+    Container.set<Interfaces.ITrackingService>(TOKENS.ITrackingService, Container.get(Services.DemoTrackingService));
+
     Container.set<Interfaces.IComputeClient>(TOKENS.IComputeClient, new AIClients.ComputeClient(
         Container.get(Services.TokenService),
     ));
@@ -34,8 +35,29 @@ export function setupContainer() {
         Container.get(Services.TokenService),
     ));
     Container.set<Interfaces.IRecordClient>(TOKENS.IRecordClient, new AIClients.RecordClient(
-        Container.get(Services.TokenService),Container.get(Services.FileTypeService),
+        Container.get(Services.TokenService), Container.get(Services.FileTypeService),
     ));
+
+
+    Container.set<Interfaces.IBatchClient>(TOKENS.IBatchClient, new BatchClient(
+        //Container.get(Services.TokenService),
+    ));
+
+
+    Container.set<TaskProcessor>(
+        TOKENS.IndexTaskProcessor,
+        Container.get(IndexTaskProcessor),
+    );
+    Container.set<TaskProcessor>(
+        TOKENS.RedactTaskProcessor,
+        Container.get(RedactTaskProcessor),
+    );
+
+    Container.set<Interfaces.IIntegrationService>(
+        TOKENS.IIntegrationService,
+        Container.get(Services.DemoBatchIntegrationService),
+    );
+
 
 }
 export { Container };

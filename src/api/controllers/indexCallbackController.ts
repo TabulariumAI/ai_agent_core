@@ -5,7 +5,8 @@ import {
     Res,
     QueryParam,
     Body,
-    HeaderParam
+    HeaderParam,
+    QueryParams
 } from "routing-controllers";
 import { Inject, Service } from "typedi";
 import { Request, Response } from "express";
@@ -13,6 +14,7 @@ import { Request, Response } from "express";
 import { Callback, CallbackData } from "../../core/entities/callback";
 import { ControllerHelper } from "../utils/controllerHelper";
 import { IndexCallbackUseCase, IndexCallbackData } from "../../application/useCases/indexCallbackUseCase";
+import { SessionQueryParams } from "../utils/sessionQueryParam";
 
 /**
  * Controller responsible for handling index callbacks.
@@ -29,7 +31,7 @@ export class IndexCallbackController {
      * Handles index callback.
      *
      * @route POST /callback/index
-     * @param session - The session identifier from the query parameters
+     * @param session - The session information from the query parameters
      * @param token - The authorization token from the header
      * @param body - The callback data in the request body
      *
@@ -40,15 +42,16 @@ export class IndexCallbackController {
     @Post(`/${Callback.INDEX}`)
     async index(
         @Req() req: Request, @Res() res: Response,
-        @QueryParam("sn") session: string,
+        @QueryParams() sessionParam: SessionQueryParams,
         @HeaderParam("Authorization") token: string,
         @Body() callbackData: CallbackData
     ) {
-        const tokenData = `${Callback.INDEX}?sn=${session}`;
+        const session = sessionParam.toSession();
+        const tokenData = `${Callback.INDEX}?${session.getPath()}`;
         return await this.helper.withCallbackErrorHandling(tokenData, token, callbackData, async () => {
             // Execute the use case
             const data: IndexCallbackData = {
-                session: session,
+                sessionData: session,
                 callbackData: callbackData
             };
             await this.useCase.execute(data);

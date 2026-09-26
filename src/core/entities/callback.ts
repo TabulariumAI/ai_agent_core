@@ -58,5 +58,31 @@ export enum CallbackType {
 export interface CallbackData {
     status: CallbackStatus,
     data: string
-    types?: string
+    types?: string,
+
+}
+
+export interface TaskCallbackData {
+    id: string,
+    batch: string
+}
+
+export class SessionCallbackData {
+    constructor(id: string, task?: TaskCallbackData) {
+        this.id = id;
+        this.task = task;
+    }
+
+    id: string;
+    task?: TaskCallbackData;
+
+
+    getPath(): string {
+        let path = `sn=${this.id}`;
+        if (this.task) {
+            path += `&bt=${this.task.batch}&tk=${this.task.id}`;
+        }
+        return path;
+
+    }
 }

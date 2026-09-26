@@ -20,10 +20,10 @@ export class ReprocessClient implements IReprocessClient {
         //@Inject(TOKENS.ITrackingService) private readonly trackingService: ITrackingService,
     ) {}
 
-    async reprocessDocument(context: Entities.WorkflowContext, session: string, segment: string, callback: Entities.Callback): Promise<void> {
-        const url = Config.reprocess.document(session, segment); 
+    async reprocessDocument(context: Entities.WorkflowContext, sessionCallbackData: Entities.SessionCallbackData, segment: string, callback: Entities.Callback): Promise<void> {
+        const url = Config.reprocess.document(sessionCallbackData.id, segment); 
 
-        const path = `${callback}?sn=${session}`;
+        let path = `${callback}?${sessionCallbackData.getPath()}`;
         const token = this.tokenService.sign(path);
 
         const response = await fetch(url, {

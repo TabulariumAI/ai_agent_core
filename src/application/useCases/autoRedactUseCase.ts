@@ -4,8 +4,8 @@ import { Readable } from "stream";
 import { TOKENS } from "../../core/tokens";
 import * as Interfaces from "../../core/interfaces/imports";
 import * as Entities from "../../core/entities/imports";
-import { UseCaseHelper } from "../utils/useCaseHelper";
-import { autoRedactChoice } from "./choices/autoRedactChoice";
+import { IndexService } from "../../infrastructure/services/indexService";
+import { autoRedactChoice } from "../../core/entities/choices/autoRedactChoice";
 
 /** * Data structure for auto-redact use case.
  * Contains document type and stream.
@@ -17,6 +17,7 @@ import { autoRedactChoice } from "./choices/autoRedactChoice";
 export interface AutoRedactData {
     documentType: string,
     stream: Readable,
+    taskData?: Entities.TaskCallbackData
 }
 
 /**
@@ -27,13 +28,13 @@ export interface AutoRedactData {
 export class AutoRedactUseCase {
     private readonly context = {
         workflow: Entities.Workflow.AUTOREDACT,
-        step: Entities.Step.INDEX
+        step: Entities.Step.INDEX,
     }
 
     constructor(
         @Inject(TOKENS.IBlobService) private readonly blobService: Interfaces.IBlobService,
         @Inject(TOKENS.ITrackingService) private readonly trackingService: Interfaces.ITrackingService,
-        @Inject() private readonly helper: UseCaseHelper,
+        @Inject() private readonly indexService: IndexService,
     ) { }
 
     /**
@@ -43,7 +44,7 @@ export class AutoRedactUseCase {
      * @returns {Promise<string>} - The session identifier for the processed document
      */
     async execute(data: AutoRedactData): Promise<string> {
-        const session = await this.helper.index(this.context, data.documentType, data.stream, autoRedactChoice.items, Entities.Callback.AUTOREDACT_INDEX);
+        const session = await this.indexService.index(this.context, data.documentType, data.stream, autoRedactChoice.items, Entities.Callback.AUTOREDACT_INDEX, data.taskData);
         return session;
     }
 }
