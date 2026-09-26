@@ -1,12 +1,11 @@
 const requiredEnvironment = {
-  API_KEY: 'api-key',
+  API_KEY: 'subscription:api-key',
   BATCH_CONTAINER: 'container',
   BATCH_INDEX_IN: 'index-in',
   BATCH_INDEX_OUT: 'index-out',
   BATCH_REDACT_IN: 'redact-in',
   BATCH_REDACT_OUT: 'redact-out',
   PROCESSING_DIR: 'processing',
-  SUBSCRIPTION: 'subscription',
   CALLBACK_URL: 'https://callback.test/',
   BATCH_URL: 'https://batch.test/',
   SESSION_URL: 'https://session.test/',
@@ -37,7 +36,8 @@ describe('Config', () => {
   it('requires configured environment values and trims trailing slashes', async () => {
     const { Config } = await import('../config');
 
-    expect(Config.apiKey).toBe('api-key');
+    expect(Config.apiKey).toBe('subscription:api-key');
+    expect(Config.subscription).toBe('subscription');
     expect(Config.services.callbackUrl).toBe('https://callback.test');
     expect(Config.services.reprocess).toBe('https://reprocess.test');
     expect(Config.formats).toEqual({ recordFormat: '', redactFormat: '' });

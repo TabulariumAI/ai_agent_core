@@ -1,0 +1,32 @@
+location: $LOCATION
+properties:
+  environmentId: $ENV_ID
+  configuration:
+    ingress:
+      external: true
+      allowInsecure: false      
+      targetPort: $TARGET_PORT
+    registries:
+      - server: $ACR_SERVER
+        username: $ACR_USERNAME
+        passwordSecretRef: acr-pw
+    secrets:
+      - name: acr-pw
+        value: $ACR_PASSWORD
+  template:
+    containers:
+      - name: $APP_NAME
+        image: $ACR_SERVER/$IMAGE_NAME 
+        resources:
+          cpu: $CPU
+          memory: $MEMORY
+        volumeMounts:
+          - volumeName: $STORAGE_NAME
+            mountPath: $STORAGE_PATH
+    scale:
+      minReplicas: $MIN_REPLICAS
+      maxReplicas: $MAX_REPLICAS
+    volumes:
+      - name: $STORAGE_NAME
+        storageType: $STORAGE_TYPE
+        storageName: $STORAGE_NAME

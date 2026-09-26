@@ -2,5 +2,7 @@
 dist/
 node_modules/
 mock-data/
-package-lock.json
-.env.dev
+.env
+.env.*
+coverage/
+processing/

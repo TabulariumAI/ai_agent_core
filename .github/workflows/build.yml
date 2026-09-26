@@ -1,4 +1,4 @@
-name: Company - Build and Deploy Image
+name: AI Agent Core - Build and Deploy Image
 
 on:
   workflow_dispatch:

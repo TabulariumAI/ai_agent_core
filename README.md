@@ -8,6 +8,7 @@ queues index and redaction batches from Azure Blob Storage.
 - [Architecture and development](docs/architecture.md)
 - [Batch processing and operational limits](docs/batches.md)
 - [Callback protocol](docs/callbacks.md)
+- [Deploy to Azure Container Apps with GitHub Actions](docs/deployment.md)
 
 Run `npm ci`, configure the environment described in the setup guide, and run
 `npm start`. The API listens on port 3000. The default dependency container uses

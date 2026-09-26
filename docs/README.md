@@ -63,7 +63,6 @@ BATCH_INDEX_OUT=index/out
 BATCH_REDACT_IN=redact/in
 BATCH_REDACT_OUT=redact/out
 PROCESSING_DIR=./processing
-SUBSCRIPTION=your-subscription-id
 SESSION_URL=https://your-session-service
 COMPUTE_URL=https://your-compute-service
 INDEX_URL=https://your-index-service
@@ -90,8 +89,9 @@ value for callback signing. Optional formats default to an empty string.
 list/read access to inputs and write access to outputs. It is passed directly to
 `ContainerClient`, not interpreted as a connection string. Batch roots are blob
 prefixes within that container. `PROCESSING_DIR` is a writable local directory;
-relative paths resolve from the process working directory. `SUBSCRIPTION` is used
-in the batch service session-registration URL.
+relative paths resolve from the process working directory. The batch subscription
+is derived from the part of `API_KEY` before the first `:`; there is no separate
+`SUBSCRIPTION` environment setting.
 
 `CALLBACK_URL` must include `/callback` and be reachable by downstream services.
 The localhost example works only when those services can reach this machine at

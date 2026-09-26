@@ -192,8 +192,7 @@ describe('TaskProcessor', () => {
     jest.useFakeTimers();
     await processor.addTasks([
       makeTask('sent-1', TaskStatus.Sent),
-      makeTask('pending-1', TaskStatus.Pending),
-      makeTask('pending-2', TaskStatus.Pending),
+      ...Array.from({ length: 19 }, (_, index) => makeTask(`pending-${index}`, TaskStatus.Pending)),
       makeTask('queued-1'),
     ]);
     const loop = processor.processTasks();
@@ -223,13 +222,14 @@ describe('TaskProcessor', () => {
     await loop;
   });
 
-  it('sorts sent, pending, and queued task groups by task id', async () => {
+  it('keeps queued tasks waiting when unsorted active tasks fill the limit', async () => {
     jest.useFakeTimers();
     await processor.addTasks([
       makeTask('sent-b', TaskStatus.Sent),
       makeTask('sent-a', TaskStatus.Sent),
       makeTask('pending-b', TaskStatus.Pending),
       makeTask('pending-a', TaskStatus.Pending),
+      ...Array.from({ length: 16 }, (_, index) => makeTask(`pending-extra-${index}`, TaskStatus.Pending)),
       makeTask('queued-b'),
       makeTask('queued-a'),
     ]);
