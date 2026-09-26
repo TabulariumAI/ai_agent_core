@@ -46,7 +46,18 @@ jobs:
           password: ${{ steps.acr.outputs.ACR_PASSWORD }}
 
       - name: Verify image existence
+        shell: bash
         run: |
+          set -euo pipefail
+          REPOSITORY_EXISTS=$(az acr repository list \
+            --name "$ACR" \
+            --query "[?@=='$APP_NAME']" -o tsv)
+
+          if [ -z "$REPOSITORY_EXISTS" ]; then
+            echo "Repository $APP_NAME does not exist yet. Continuing with first image creation."
+            exit 0
+          fi
+
           TAG_EXISTS=$(az acr repository show-tags \
             --name "$ACR" \
             --repository "$APP_NAME" \
