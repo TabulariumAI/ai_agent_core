@@ -19,6 +19,14 @@ env:
 
   CERTIFICATE: cloudflare
 
+  STORAGE_RESOURCE_GROUP: root
+  STORAGE_ACCOUNT: tabulariumaidemostorage
+  STORAGE_SHARE: share
+  STORAGE_TYPE: AzureFile
+  STORAGE_NAME: data
+  STORAGE_PATH: /mnt/data
+
+
   ADDITIONAL_SECRETS: |
     api-key=${{ secrets.API_KEY }}
     batch-container=${{ secrets.BATCH_CONTAINER }}
