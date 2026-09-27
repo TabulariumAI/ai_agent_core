@@ -46,7 +46,8 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout ai-agent-core
+
+      - name: Checkout document-svc
         uses: actions/checkout@v4
 
       - name: Azure Login
@@ -77,6 +78,11 @@ jobs:
           username: ${{ steps.acr.outputs.ACR_USERNAME }}
           password: ${{ steps.acr.outputs.ACR_PASSWORD }}
 
+      - name: Get Storage Account Key
+        id: storage
+        run: |
+          echo "STORAGE_KEY=$(az storage account keys list --resource-group ${{ env.STORAGE_RESOURCE_GROUP }} --account-name ${{ env.STORAGE_ACCOUNT }} --query "[0].value" -o tsv)" >> $GITHUB_OUTPUT
+
       - name: Verify image existence
         id: image
         run: |
@@ -91,6 +97,9 @@ jobs:
           fi
           echo "IMAGE_NAME=${{ env.APP_NAME }}:${{ env.APP_VERSION }}" >> $GITHUB_OUTPUT
 
+      - name: Create Resource Group if not exists
+        run: |
+          az group create --name ${{ env.RESOURCE_GROUP }} --location ${{ env.LOCATION }} || true
 
       - name: Create Log Analytics Workspace (if not exists)
         id: workspace
@@ -125,6 +134,15 @@ jobs:
             --logs-workspace-key ${{ steps.loganalytics.outputs.WORKSPACE_KEY }} \
             --query id -o tsv)
           
+          az containerapp env storage set \
+            --name $ENV_NAME \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --storage-name ${{ env.STORAGE_NAME }} \
+            --azure-file-account-name ${{ env.STORAGE_ACCOUNT }} \
+            --azure-file-account-key ${{ steps.storage.outputs.STORAGE_KEY }} \
+            --azure-file-share-name ${{ env.STORAGE_NAME }} \
+            --access-mode ReadWrite
+
           echo "ENV_ID=$ENV_ID" >> $GITHUB_OUTPUT
           echo "ENV_NAME=$ENV_NAME" >> $GITHUB_OUTPUT
 
@@ -214,14 +232,23 @@ jobs:
               --yaml container.yml
           fi          
 
+      # - name: Set CORS for Container App
+      #   run: |
+      #     az containerapp ingress cors update \
+      #       --name ${{ env.APP_NAME }} \
+      #       --resource-group ${{ env.RESOURCE_GROUP }} \
+      #       --allowed-origins ${{ env.CORS_ORIGINS }} \
+      #       --allowed-methods ${{ env.CORS_METHODS }} \
+      #       --allowed-headers ${{ env.CORS_HEADERS }}
 
       - name: Bind Custom Domains
         run: |
-          for DOMAIN in ${{ env.DOMAINS }}; do
+          DOMAINS="${{ env.HOST }}"
+          for DOMAIN in $DOMAINS; do
             echo "Processing domain: $DOMAIN"
             HOST_EXISTS=$(az containerapp hostname list \
               -g ${{ env.RESOURCE_GROUP }} \
-              -n ${{env.APP_NAME}} \
+              -n ${{ env.APP_NAME }} \
               --query "[?name=='$DOMAIN'] | length(@)" -o tsv)
             if [ "$HOST_EXISTS" -eq "0" ]; then
               echo "Binding domain $DOMAIN to app..."
@@ -235,5 +262,3 @@ jobs:
               echo "Domain $DOMAIN already bound to app. Skipping."
             fi
           done
-
-
