@@ -19,8 +19,10 @@ env:
 
   CERTIFICATE: cloudflare
 
-  ADDITIONAL_SECRETS: "api-key=${{ secrets.API_KEY }} batch-container=${{ secrets.BATCH_CONTAINER }}"
-  ADDITIONAL_VARS: |-
+  ADDITIONAL_SECRETS: |
+    api-key=${{ secrets.API_KEY }}
+    batch-container=${{ secrets.BATCH_CONTAINER }}
+  ADDITIONAL_VARS: |
     API_KEY=secretRef:api-key
     BATCH_CONTAINER=secretRef:batch-container
     SESSION_URL=https://user.tabulariumai.com/v1
@@ -30,7 +32,7 @@ env:
     RECORD_URL=https://document.tabulariumai.com/v1
     REDACT_URL=https://document.tabulariumai.com/v1
     REPROCESS_URL=https://document.tabulariumai.com/v1
-    CALLBACK_URL=https://demo.agentcore.tabulariumai.com/callback
+    CALLBACK_URL=https://demo.agentcore.tabulariumai.com/callback"
 
 jobs:
   build-and-deploy:
@@ -162,23 +164,24 @@ jobs:
 
           envsubst < container.yml.txt > container.yml
 
-          for VAR in ${{ env.ADDITIONAL_SECRETS }}; do
+          while IFS= read -r VAR; do
+            [[ -z "$VAR" ]] && continue
             VAR_NAME="${VAR%%=*}"
             VAR_VALUE="${VAR#*=}"
-            yq -i ".properties.configuration.secrets += [{\"name\": \"$VAR_NAME\", \"value\": \"$VAR_VALUE\"}]"  container.yml
-          done          
-          
-          for VAR in ${{ env.ADDITIONAL_VARS }}; do
+            yq -i ".properties.configuration.secrets += [{\"name\": \"$VAR_NAME\", \"value\": \"$VAR_VALUE\"}]" container.yml
+          done <<< "${{ env.ADDITIONAL_SECRETS }}"
+
+          while IFS= read -r VAR; do
+            [[ -z "$VAR" ]] && continue
             VAR_NAME="${VAR%%=*}"
             VAR_VALUE="${VAR#*=}"
-            PREFIX="secretRef:"
-            if [[ $VAR_VALUE == $PREFIX* ]]; then
-              VAR_VALUE=${VAR_VALUE#$PREFIX}
-              yq -i ".properties.template.containers[0].env += [{\"name\": \"$VAR_NAME\", \"secretRef\": \"$VAR_VALUE\"}]"  container.yml
+            if [[ "$VAR_VALUE" == secretRef:* ]]; then
+              VAR_VALUE="${VAR_VALUE#secretRef:}"
+              yq -i ".properties.template.containers[0].env += [{\"name\": \"$VAR_NAME\", \"secretRef\": \"$VAR_VALUE\"}]" container.yml
             else
-              yq -i ".properties.template.containers[0].env += [{\"name\": \"$VAR_NAME\", \"value\": \"$VAR_VALUE\"}]"  container.yml
+              yq -i ".properties.template.containers[0].env += [{\"name\": \"$VAR_NAME\", \"value\": \"$VAR_VALUE\"}]" container.yml
             fi
-           done
+          done <<< "${{ env.ADDITIONAL_VARS }}"
 
           echo "Generated container.yml:"
           cat container.yml
