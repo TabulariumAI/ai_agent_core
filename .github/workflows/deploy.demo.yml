@@ -32,7 +32,7 @@ env:
     RECORD_URL=https://document.tabulariumai.com/v1
     REDACT_URL=https://document.tabulariumai.com/v1
     REPROCESS_URL=https://document.tabulariumai.com/v1
-    CALLBACK_URL=https://demo.agentcore.tabulariumai.com/callback"
+    CALLBACK_URL=https://demo.agentcore.tabulariumai.com/callback
 
 jobs:
   build-and-deploy:
