@@ -163,14 +163,14 @@ jobs:
           envsubst < container.yml.txt > container.yml
 
           for VAR in ${{ env.ADDITIONAL_SECRETS }}; do
-            VAR_NAME=$(echo $VAR | cut -d '=' -f 1)
-            VAR_VALUE=$(echo $VAR | cut -d '=' -f 2)
+            VAR_NAME="${VAR%%=*}"
+            VAR_VALUE="${VAR#*=}"
             yq -i ".properties.configuration.secrets += [{\"name\": \"$VAR_NAME\", \"value\": \"$VAR_VALUE\"}]"  container.yml
           done          
           
           for VAR in ${{ env.ADDITIONAL_VARS }}; do
-            VAR_NAME=$(echo "$VAR" | cut -d '=' -f 1)
-            VAR_VALUE=$(echo "$VAR" | cut -d '=' -f 2)
+            VAR_NAME="${VAR%%=*}"
+            VAR_VALUE="${VAR#*=}"
             PREFIX="secretRef:"
             if [[ $VAR_VALUE == $PREFIX* ]]; then
               VAR_VALUE=${VAR_VALUE#$PREFIX}
