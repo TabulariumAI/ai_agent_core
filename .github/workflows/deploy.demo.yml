@@ -19,20 +19,18 @@ env:
 
   CERTIFICATE: cloudflare
 
-  ADDITIONAL_SECRETS: |-
-    api-key=${{ secrets.API_KEY }}
-    batch-container=${{ secrets.BATCH_CONTAINER }}
+  ADDITIONAL_SECRETS: "api-key=${{ secrets.API_KEY }} batch-container=${{ secrets.BATCH_CONTAINER }}"
   ADDITIONAL_VARS: |-
     API_KEY=secretRef:api-key
     BATCH_CONTAINER=secretRef:batch-container
-    SESSION_URL="https://user.tabulariumai.com/v1"
-    INDEX_URL="https://document.tabulariumai.com/v1"
-    FEEDBACK_URL="https://document.tabulariumai.com/v1"
-    COMPUTE_URL="https://document.tabulariumai.com/v1"
-    RECORD_URL="https://document.tabulariumai.com/v1"
-    REDACT_URL="https://document.tabulariumai.com/v1"
-    REPROCESS_URL="https://document.tabulariumai.com/v1"
-    CALLBACK_URL="https://demo.agentcore.tabulariumai.com/callback"
+    SESSION_URL=https://user.tabulariumai.com/v1
+    INDEX_URL=https://document.tabulariumai.com/v1
+    FEEDBACK_URL=https://document.tabulariumai.com/v1
+    COMPUTE_URL=https://document.tabulariumai.com/v1
+    RECORD_URL=https://document.tabulariumai.com/v1
+    REDACT_URL=https://document.tabulariumai.com/v1
+    REPROCESS_URL=https://document.tabulariumai.com/v1
+    CALLBACK_URL=https://demo.agentcore.tabulariumai.com/callback
 
 jobs:
   build-and-deploy:
