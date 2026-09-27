@@ -8,4 +8,4 @@
 !src/**
 src/tests/
 src/**/*.test.ts
-src/**/.env*
+src/**/.env.*

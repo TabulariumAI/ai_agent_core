@@ -56,6 +56,7 @@ export function startServer(port = 3000) {
   setupContainer();
   useContainer(Container);
 
+  
   const app = createApp();
   const server = app.listen(port, () => console.log(`API running on http://localhost:${port}`));
   void startIndexProcessor();
