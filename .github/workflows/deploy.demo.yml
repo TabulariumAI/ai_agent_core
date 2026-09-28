@@ -10,7 +10,7 @@ env:
   APP_NAME: ai-agent-core
   APP_VERSION: v1.1.9
   ACR: tabulariumregistry
-  DOMAINS: "demo.agentcore.tabulariumai.com"
+  HOST: demoagentcore.tabulariumai.com
   TARGET_PORT: 3000
   CPU: 0.5
   MEMORY: 1Gi
