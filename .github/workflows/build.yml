@@ -6,7 +6,7 @@ on:
 env:
   SUBSCRIPTION: TabulariumAI
   APP_NAME: ai-agent-core
-  APP_VERSION: v1.1.7
+  APP_VERSION: v1.1.8
   ACR: tabulariumregistry
  
 

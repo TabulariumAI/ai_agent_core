@@ -58,7 +58,7 @@ export function startServer(port = 80) {
 
 
   const app = createApp();
-  const server = app.listen(port, () => console.log(`API running on port ${port}`));
+  const server = app.listen(port, "0.0.0.0", () => console.log(`API running on port ${port}`));
   void startIndexProcessor();
   void startRedactProcessor();
   return server;
