@@ -93,25 +93,24 @@ export class DemoBatchIntegrationService implements Interfaces.IIntegrationServi
             }
             return;
         }
-        if (!session.task || !session.task.id) {
-            throw new Error(`Invalid session data: ${JSON.stringify(session)}`);
-        }
-        if (context.metaData) {
-            const task = await this.batchRepository.getTask(Entities.BatchType.Index, session.task.batch, session.task.id);
-            if (!task) {
-                throw new Error(`Task not found: ${session.task.id}`);
-            }
-
-            await this.batchSourceRepository.setContent(Config.batchIndexOut, session.task.batch, task.name, {
-                documentType: "json",
-                data: Buffer.from(context.metaData)
-            });
-            await getIndexProcessor().finalizeTaskSuccess(session.task.id);
-            this.logger.info(`Info: workflow:${Entities.Workflow.INDEX}, session: ${session.id}. Metadata saved to ${Config.batchIndexOut}`);
-        }
         else {
-            await getIndexProcessor().finalizeTaskFailure(session.task.id, `No metadata to save`);
-            this.logger.error(`Warning: workflow:${Entities.Workflow.INDEX}, session: ${session.id}. No metadata to save.`);
+            if (context.metaData) {
+                const task = await this.batchRepository.getTask(Entities.BatchType.Index, session.task.batch, session.task.id);
+                if (!task) {
+                    throw new Error(`Task not found: ${session.task.id}`);
+                }
+
+                await this.batchSourceRepository.setContent(Config.batchIndexOut, session.task.batch, `${task.name}.metadata.json`, {
+                    documentType: "json",
+                    data: Buffer.from(context.metaData)
+                });
+                await getIndexProcessor().finalizeTaskSuccess(session.task.id);
+                this.logger.info(`Info: workflow:${Entities.Workflow.INDEX}, session: ${session.id}. Metadata saved to ${Config.batchIndexOut}`);
+            }
+            else {
+                await getIndexProcessor().finalizeTaskFailure(session.task.id, `No metadata to save`);
+                this.logger.error(`Warning: workflow:${Entities.Workflow.INDEX}, session: ${session.id}. No metadata to save.`);
+            }
         }
     }
 
@@ -121,8 +120,8 @@ export class DemoBatchIntegrationService implements Interfaces.IIntegrationServi
      * @return A promise that resolves when the metadata is saved.
      * @throws Error if there is an issue saving the metadata.
      */
-    async processRefine(session: Entities.SessionCallbackData, context: Entities.MetaDataContext): Promise<void> {
-        if (context.metaData) {
+    async processRefine(session: Entities.SessionCallbackData, context: Entities.MetaDataContext): Promise < void> {
+            if(context.metaData) {
             const fullPath = await this.saveMetadataJson(session.id, "refine", "metadata.json", context.metaData);
             this.logger.info(`Info: workflow:${Entities.Workflow.REPROCESS}, session: ${session.id}. Metadata saved to ${fullPath}`);
         }
@@ -204,8 +203,8 @@ export class DemoBatchIntegrationService implements Interfaces.IIntegrationServi
             if (!task) {
                 throw new Error(`Task not found: ${session.task.id}`);
             }
-
-            await this.batchSourceRepository.setContent(Config.batchRedactOut, session.task.batch, task.name, {
+            const ext = this.callbackService.getCallbackDataFileExtension(context.content.documentType);
+            await this.batchSourceRepository.setContent(Config.batchRedactOut, session.task.batch, `${task.name}.${ext}`, {
                 documentType: this.callbackService.getCallbackDataFileExtension(context.content.documentType),
                 data: context.content.data
             });

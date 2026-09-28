@@ -19,6 +19,9 @@ export class FsBatchRepository implements Interfaces.IBatchRepository {
 
     async createBatch(batch: Entities.Batch): Promise<void> {
         const batchDir = path.join(Config.processingDir, this.batches, batch.detail.type.toString(), batch.detail.name);
+        if (await fs.promises.access(batchDir).then(() => true).catch(() => false)) {
+            throw new Entities.BadRequestError(`Batch already exists: ${batchDir}`);
+        }
 
         await fs.promises.mkdir(batchDir, { recursive: true });
         const tasksDir = path.join(batchDir, this.tasks);

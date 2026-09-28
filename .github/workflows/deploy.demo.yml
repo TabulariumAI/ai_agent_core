@@ -8,7 +8,7 @@ env:
   RESOURCE_GROUP: demo
   LOCATION: centralus
   APP_NAME: ai-agent-core
-  APP_VERSION: v1.2.1
+  APP_VERSION: v1.2.2
   ACR: tabulariumregistry
   HOST: demoagentcore.tabulariumai.com
   TARGET_PORT: 3000
