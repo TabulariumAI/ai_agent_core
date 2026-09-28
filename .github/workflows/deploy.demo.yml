@@ -8,7 +8,7 @@ env:
   RESOURCE_GROUP: demo
   LOCATION: centralus
   APP_NAME: ai-agent-core
-  APP_VERSION: v1.2.3
+  APP_VERSION: v1.2.4
   ACR: tabulariumregistry
   HOST: demoagentcore.tabulariumai.com
   TARGET_PORT: 3000
@@ -29,9 +29,11 @@ env:
 
   ADDITIONAL_SECRETS: |
     api-key=${{ secrets.API_KEY }}
+    token-secret=${{ secrets.TOKEN_SECRET }}
     batch-container=${{ secrets.BATCH_CONTAINER }}
   ADDITIONAL_VARS: |
     API_KEY=secretRef:api-key
+    TOKEN_SECRET=secretRef:token-secret
     BATCH_CONTAINER=secretRef:batch-container
     BATCH_URL=https://user.tabulariumai.com/v1
     SESSION_URL=https://demobackend.tabulariumai.com/v1

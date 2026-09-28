@@ -44,7 +44,7 @@ export class IndexBatchProcessingController {
             const data: IndexProcessingData = { type: Entities.BatchType.Index, batch };
             await this.useCase.execute(data);
             return {};
-        }, res);
+        }, req, res);
 
     }
 

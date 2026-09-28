@@ -57,6 +57,6 @@ export class ProvisionController {
       }
       const session = await this.useCase.execute(data);
       return { session: session };
-    }, res);
+    }, req, res);
   }
 }

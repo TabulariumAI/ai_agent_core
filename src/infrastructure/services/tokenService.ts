@@ -1,5 +1,6 @@
 import { Service } from 'typedi';
 import crypto from 'crypto';
+import { Config } from '../../config';
 
 const TOKEN_EXP = "exp";
 const TOKEN_SIG = "sig";
@@ -11,7 +12,6 @@ const TOKEN_EXPIRATION = 3600; // seconds
  */
 @Service()
 export class TokenService {
-  private readonly secret = process.env.TOKEN_SECRET || 'default_secret';
 
   constructor() {}
   /**
@@ -25,7 +25,7 @@ export class TokenService {
   private generate(data: string, expiration: string): string {
     const signatureData = `${data}&${TOKEN_EXP}=${expiration}`;
     const signature = crypto
-      .createHmac("sha256", this.secret)
+      .createHmac("sha256", Config.tokenSecret)
       .update(signatureData)
       .digest("hex");
 
@@ -78,5 +78,9 @@ export class TokenService {
     } catch {
       return false;
     }
+  }
+
+  validateApiKey(apiKey: string): boolean {
+    return apiKey === Config.apiKey;
   }
 }

@@ -55,6 +55,6 @@ export class IndexController {
       }
       const session = await this.useCase.execute(data);
       return { session: session };
-    }, res);
+    }, req, res);
   }
 }

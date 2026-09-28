@@ -43,7 +43,7 @@ export class RedactBatchProcessingController {
             const data: RedactProcessingData = { type: Entities.BatchType.Redact, batch };
             await this.useCase.execute(data);
             return {};
-        }, res);
+        }, req, res);
 
     }
 

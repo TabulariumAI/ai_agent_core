@@ -59,6 +59,6 @@ export class ReprocessController {
             }
             await this.useCase.execute(data);
             return {};
-        }, res);
+        }, req, res);
     }
 }

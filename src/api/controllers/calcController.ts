@@ -51,6 +51,6 @@ export class CalcController {
             }
             await this.useCase.execute(data);
             return {};
-        }, res);
+        }, req, res);
     }
 }

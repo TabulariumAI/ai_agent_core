@@ -6,7 +6,6 @@ import { FileTypeService } from "../../infrastructure/services/fileTypeService";
 import { ChoiceService } from "../../infrastructure/services/choiceService";
 import { BadRequestError, AuthorizationError, InternalError, NotFoundError } from "../../core/entities/error";
 import { CallbackData, CallbackStatus } from "../../core/entities/callback";
-import { Choice } from "../../core/entities/choice";
 
 
 /** Controller helper class.
@@ -32,12 +31,15 @@ export class ControllerHelper {
    */
   async withErrorHandling<T>(
     action: () => Promise<T>,
-    //req: Request,
+    req: Request,
     res: Response
   ): Promise<T | Response> {
     
     try {
-      //req.headers.authorization;
+      const apiKey = req.headers.authorization;
+      if (!apiKey || !this.tokenService.validateApiKey(apiKey)) {
+        return res.status(401).send({ error: "Unauthorized" });
+      }
       return await action();
     } catch (error) {
       if (error instanceof NotFoundError) {

@@ -52,6 +52,6 @@ export class RedactController {
             }
             await this.useCase.execute(data);
             return {};
-        }, res);
+        }, req, res);
     }
 }

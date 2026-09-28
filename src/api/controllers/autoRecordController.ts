@@ -64,6 +64,6 @@ export class AutoRecordController {
       }
       const session = await this.useCase.execute(data);
       return { session: session };
-    }, res);
+    }, req, res);
   }
 }

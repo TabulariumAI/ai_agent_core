@@ -19,6 +19,7 @@ export class Config {
 
 
     static readonly apiKey = this.require("API_KEY");
+    static readonly tokenSecret = this.require("TOKEN_SECRET");
     static readonly batchContainer = this.require("BATCH_CONTAINER");
     static readonly batchIndexIn = this.require("BATCH_INDEX_IN");
     static readonly batchIndexOut = this.require("BATCH_INDEX_OUT");
