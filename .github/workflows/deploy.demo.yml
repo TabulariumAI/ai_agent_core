@@ -11,7 +11,7 @@ env:
   APP_VERSION: v1.1.9
   ACR: tabulariumregistry
   DOMAINS: "demo.agentcore.tabulariumai.com"
-  TARGET_PORT: 80
+  TARGET_PORT: 3000
   CPU: 0.5
   MEMORY: 1Gi
   MIN_REPLICAS: 1
