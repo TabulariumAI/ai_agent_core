@@ -51,7 +51,7 @@ export function createApp() {
   return app;
 }
 
-export function startServer(port = 80) {
+export function startServer(port = 3000) {
   dotenv.config();
   setupContainer();
   useContainer(Container);
