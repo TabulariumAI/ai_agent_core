@@ -59,9 +59,13 @@ Imports still load configuration, so environment values must already be availabl
 
 `startServer()` returns the HTTP server and starts both processors without awaiting
 their long-running promises. `TaskProcessor.processTasks()` resolves only when
-the loop exits. `stopProcessing()` requests exit after the current iteration;
-closing the HTTP server alone does not stop these loops. No signal-based shutdown
-handler or persisted-queue recovery is currently installed.
+the loop exits. `stopProcessing()` requests exit after the current iteration and
+returns a promise for that exit; closing the HTTP server alone does not stop the
+loops. The executable entry point handles `SIGTERM` and `SIGINT`, stopping both
+processors and closing the HTTP listener. It waits for the current worker
+iterations and active HTTP requests, exiting successfully when they finish or
+with an error after 25 seconds. This does not drain queued tasks or wait for
+future downstream callbacks. Persisted-queue recovery is not implemented.
 
 ## Validation and tests
 

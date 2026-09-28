@@ -39,7 +39,18 @@ import { Container, setupContainer } from '../di/container';
 import { startIndexProcessor, startRedactProcessor } from '../application/processors/processorRegistry';
 import { app, createApp, startServer } from '../index';
 
+// Capture import side effects before beforeEach clears mock calls.
+const importCalls = {
+  listen: mockListen.mock.calls.length,
+  index: mockStartIndexProcessor.mock.calls.length,
+  redact: mockStartRedactProcessor.mock.calls.length,
+};
+
 describe('application bootstrap', () => {
+  it('does not start the listener or workers during import', () => {
+    expect(importCalls).toEqual({ listen: 0, index: 0, redact: 0 });
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
   });

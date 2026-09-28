@@ -117,9 +117,10 @@ export abstract class TaskProcessor {
         return this.processingPromise;
     }
 
-    /** Requests loop exit after the current iteration; does not drain the queue. */
-    public stopProcessing(): void {
+    /** Requests exit and waits for the current iteration; does not drain the queue. */
+    public stopProcessing(): Promise<void> {
         this.isProcessing = false;
+        return this.processingPromise ?? Promise.resolve();
     }
 
     /**
