@@ -51,14 +51,14 @@ export function createApp() {
   return app;
 }
 
-export function startServer(port = 3000) {
+export function startServer(port = 80) {
   dotenv.config();
   setupContainer();
   useContainer(Container);
 
-  
+
   const app = createApp();
-  const server = app.listen(port, () => console.log(`API running on http://localhost:${port}`));
+  const server = app.listen(port, () => console.log(`API running on port ${port}`));
   void startIndexProcessor();
   void startRedactProcessor();
   return server;

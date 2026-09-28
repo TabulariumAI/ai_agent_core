@@ -17,6 +17,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Verify that .env is actually present in the Git checkout
+      # before Docker starts building.
+      - name: Verify build context
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Repository files:"
+          ls -la
+
+          if [ ! -f .env ]; then
+            echo "::error::.env does not exist in the GitHub checkout."
+            exit 1
+          fi
+
+          if [ ! -s .env ]; then
+            echo "::error::.env exists but is empty."
+            exit 1
+          fi
+
+          echo ".env exists and is not empty."
+          echo "Lines: $(wc -l < .env)"
+          echo "Bytes: $(wc -c < .env)"
+
+
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -80,3 +105,33 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # Verify the actual image stored in ACR contains /app/.env.
+      - name: Verify .env in Docker image
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          IMAGE="$ACR.azurecr.io/$APP_NAME:$APP_VERSION"
+
+          docker pull "$IMAGE"
+
+          docker run --rm \
+            --entrypoint sh \
+            "$IMAGE" \
+            -c '
+              if [ ! -f /app/.env ]; then
+                echo "ERROR: /app/.env does not exist."
+                exit 1
+              fi
+
+              if [ ! -s /app/.env ]; then
+                echo "ERROR: /app/.env exists but is empty."
+                exit 1
+              fi
+
+              echo "/app/.env exists and is not empty."
+              echo "Lines: $(wc -l < /app/.env)"
+              echo "Bytes: $(wc -c < /app/.env)"
+            '
+
+          echo "Docker image verification successful."
