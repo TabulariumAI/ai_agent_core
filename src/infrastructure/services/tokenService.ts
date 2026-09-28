@@ -81,6 +81,7 @@ export class TokenService {
   }
 
   validateApiKey(apiKey: string): boolean {
-    return apiKey === Config.apiKey;
+    const key = apiKey?.replace("Bearer ", "");
+    return key === Config.apiKey;
   }
 }

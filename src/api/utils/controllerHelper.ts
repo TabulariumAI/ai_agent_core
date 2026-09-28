@@ -36,7 +36,7 @@ export class ControllerHelper {
   ): Promise<T | Response> {
     
     try {
-      const apiKey = req.headers.authorization;
+      let apiKey = req.headers.authorization;
       if (!apiKey || !this.tokenService.validateApiKey(apiKey)) {
         return res.status(401).send({ error: "Unauthorized" });
       }
