@@ -1,7 +1,6 @@
 import "reflect-metadata";
 import express from "express";
 import { useContainer, useExpressServer } from "routing-controllers";
-import dotenv from "dotenv";
 
 import { setupContainer, Container } from "./di/container";
 import { IndexController } from "./api/controllers/indexController";
@@ -47,21 +46,26 @@ const controllers = [
 ];
 
 export function createApp() {
+  setupContainer();
+  useContainer(Container);
   const app = express();
   useExpressServer(app, { controllers, defaultErrorHandler: false });
   return app;
 }
 
-export function startServer(port = Config.port) {
-  dotenv.config();
-  setupContainer();
-  useContainer(Container);
-
+export function startServer(port: number = Number(Config.port || 80)) {
+  if (!Number.isInteger(port) || port < 0 || port > 65535) {
+    throw new RangeError("Port must be an integer between 0 and 65535");
+  }
 
   const app = createApp();
-  const server = app.listen(port, () => console.log(`API running on port ${port}`));
-  void startIndexProcessor();
-  void startRedactProcessor();
+  const server = app.listen(port, (error?: Error) => {
+    // Express 5 forwards listener errors to this callback instead of throwing.
+    if (error) throw error;
+    console.log(`API running on port ${port}`);
+    void startIndexProcessor();
+    void startRedactProcessor();
+  });
   return server;
 }
 
