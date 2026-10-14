@@ -30,6 +30,6 @@ RUN mkdir -p /app/processing /app/mock-data \
 
 USER node
 
-EXPOSE 3000
+EXPOSE 80
 
 CMD ["node", "dist/server.js"]
