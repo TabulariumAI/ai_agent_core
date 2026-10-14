@@ -84,10 +84,10 @@ describe('application bootstrap', () => {
     expect(server).toEqual({ close: expect.any(Function) });
   });
 
-  it('uses port 80 when no server port is supplied', () => {
+  it('uses port 3000 when no server port is supplied', () => {
     startServer();
 
-    expect(mockListen).toHaveBeenCalledWith(80, expect.any(Function));
+    expect(mockListen).toHaveBeenCalledWith(3000, expect.any(Function));
   });
 
   it('exports a configured app without starting the listener', () => {

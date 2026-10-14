@@ -53,7 +53,7 @@ export function createApp() {
   return app;
 }
 
-export function startServer(port: number = Number(Config.port || 80)) {
+export function startServer(port: number = Number(Config.port || 3000)) {
   if (!Number.isInteger(port) || port < 0 || port > 65535) {
     throw new RangeError("Port must be an integer between 0 and 65535");
   }
