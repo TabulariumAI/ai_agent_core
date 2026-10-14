@@ -24,6 +24,7 @@ import { ReprocessCallbackController } from "./api/controllers/reprocessCallback
 import { startIndexProcessor, startRedactProcessor } from "./application/processors/processorRegistry";
 import { RedactBatchProcessingController } from "./api/controllers/redactBatchProcessingController";
 import { IndexBatchProcessingController } from "./api/controllers/indexBatchProcessingController";
+import { Config } from "./config";
 const controllers = [
     IndexController, 
     IndexCallbackController,
@@ -51,7 +52,7 @@ export function createApp() {
   return app;
 }
 
-export function startServer(port = 3000) {
+export function startServer(port = Config.port) {
   dotenv.config();
   setupContainer();
   useContainer(Container);

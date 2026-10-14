@@ -17,7 +17,7 @@ export class Config {
         return value ? value.replace(/\/$/, "") : "";
     }
 
-
+    static readonly port = this.value("PORT");
     static readonly apiKey = this.require("API_KEY");
     static readonly tokenSecret = this.require("TOKEN_SECRET");
     static readonly batchContainer = this.require("BATCH_CONTAINER");
