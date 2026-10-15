@@ -84,12 +84,13 @@ export class DemoBatchIntegrationService implements Interfaces.IIntegrationServi
      * @throws Error if there is an issue saving the metadata.
      */
     async processIndex(session: Entities.SessionCallbackData, context: Entities.MetaDataContext): Promise<void> {
-        if (!session.task) {
+
+        if (!session || !session.task) {
             if (context.metaData) {
                 const fullPath = await this.saveMetadataJson(session.id, "index", "metadata.json", context.metaData);
                 this.logger.info(`Index metadata saved to ${fullPath}`);
             } else {
-                this.logger.error(`Index failed for session ${session.id}: ${context.error || "No metadata to save"}`);
+                this.logger.error(`Index failed for session ${session.id}: ${context.error || "No metadata available"}`);
             }
             return;
         }
@@ -108,7 +109,7 @@ export class DemoBatchIntegrationService implements Interfaces.IIntegrationServi
                 this.logger.info(`Info: workflow:${Entities.Workflow.INDEX}, session: ${session.id}. Metadata saved to ${Config.batchIndexOut}`);
             }
             else {
-                await getIndexProcessor().finalizeTaskFailure(session.task.id, `No metadata to save`);
+                await getIndexProcessor().finalizeTaskFailure(session.task.id, `${context.error || "No metadata available"}`);
                 this.logger.error(`Warning: workflow:${Entities.Workflow.INDEX}, session: ${session.id}. No metadata to save.`);
             }
         }
@@ -185,13 +186,13 @@ export class DemoBatchIntegrationService implements Interfaces.IIntegrationServi
      * @throws Error if there is an issue saving the document.
      */
     async processAutoRedact(session: Entities.SessionCallbackData, context: Entities.ContentContext): Promise<void> {
-        if (!session.task) {
+        if (!session || !session.task) {
             if (context.content) {
                 const file = this.callbackService.getCallbackDataFile(context.content.documentType);
                 const fullPath = await this.saveDocument(session.id, "autoredact", file, context.content);
                 this.logger.info(`Auto-redacted document saved to ${fullPath}`);
             } else {
-                this.logger.error(`Auto-redaction failed for session ${session.id}: ${context.error || "No document to save"}`);
+                this.logger.error(`Auto-redaction failed for session ${session.id}: ${context.error || "No document available"}`);
             }
             return;
         }
@@ -205,15 +206,15 @@ export class DemoBatchIntegrationService implements Interfaces.IIntegrationServi
             }
             const ext = this.callbackService.getCallbackDataFileExtension(context.content.documentType);
             await this.batchSourceRepository.setContent(Config.batchRedactOut, session.task.batch, `${task.name}.${ext}`, {
-                documentType: this.callbackService.getCallbackDataFileExtension(context.content.documentType),
+                documentType: context.content.documentType,
                 data: context.content.data
             });
             await getRedactProcessor().finalizeTaskSuccess(session.task.id);
             this.logger.info(`Info: workflow:${Entities.Workflow.AUTOREDACT}, session: ${session.id}. Document saved to ${Config.batchRedactOut}`);
         }
         else {
-            await getRedactProcessor().finalizeTaskFailure(session.task.id, `No document to save`);
-            this.logger.error(`Warning: workflow:${Entities.Workflow.AUTOREDACT}, session: ${session.id}. No document to save.`);
+            await getRedactProcessor().finalizeTaskFailure(session.task.id, `${context.error || "No document available"}`);
+            this.logger.error(`Warning: workflow:${Entities.Workflow.AUTOREDACT}, session: ${session.id}. No document available.`);
         }
     }
 
