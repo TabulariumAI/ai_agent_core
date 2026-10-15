@@ -12,8 +12,8 @@ export interface TaskDetail {
 @Service()
 export abstract class TaskProcessor {
 
-    private readonly processingCount: number = 20;
-    private readonly timeoutSeconds: number = 600;
+    private readonly processingCount: number = 5;
+    private readonly timeoutSeconds: number = 1200;
 
     protected abstract batchType: Entities.BatchType;
     protected abstract context: Entities.WorkflowContext;
