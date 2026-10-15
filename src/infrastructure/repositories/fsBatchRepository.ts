@@ -64,15 +64,16 @@ export class FsBatchRepository implements Interfaces.IBatchRepository {
         const tasksDir = path.join(Config.processingDir, this.batches, batch.type.toString(), batch.name, this.tasks);
         for (const taskId of await fs.promises.readdir(tasksDir)) {
             const taskDir = path.join(tasksDir, taskId);
-            const lastVersion = await this.getLastVersion(taskDir);
-            if (!lastVersion) {
+            const task = await this.getTask(batch.type as Entities.BatchType, batch.name, taskId);
+            if (!task) {
                 continue;
             }
-            const existingItem = items.find(item => item.status === lastVersion.status);
+            const existingItem = items.find(item => item.status === task.status);
             if (existingItem) {
                 existingItem.count += 1;
+                existingItem.documents.push(task.name);
             } else {
-                items.push({ status: lastVersion.status, count: 1 });
+                items.push({ status: task.status, count: 1, documents: [task.name] });
             }
         }
         

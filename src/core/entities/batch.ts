@@ -50,6 +50,7 @@ export interface BatchDetail {
 export interface BatchReportItem {
     status: string;
     count: number;
+    documents: string[];
 }
 
 export interface BatchReport {
