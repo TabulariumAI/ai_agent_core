@@ -56,6 +56,7 @@ export class IndexProcessingUseCase {
         },
         sessionId: null,
         status: Entities.TaskStatus.Queued,
+        error: null,
       }))
     };
 

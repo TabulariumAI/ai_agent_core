@@ -62,12 +62,12 @@ export abstract class TaskProcessor {
      * @param taskId The ID of the task to update.
      * @param status The new status to set for the task.
      */
-    async updateTaskStatus(taskId: string, status: Entities.TaskStatus): Promise<void> {
+    async updateTaskStatus(taskId: string, status: Entities.TaskStatus, errorMessage: string | null): Promise<void> {
         const task = this.tasks.find(t => t.task.id === taskId);
         if (task) {
             task.date = new Date();
             task.task.status = status;
-            await this.batchRepository.setTaskStatus(task.task, status);
+            await this.batchRepository.setTaskStatus(task.task, status, errorMessage);
         }
     }
     /**
@@ -135,7 +135,8 @@ export abstract class TaskProcessor {
             this.logger.error(`Task with taskId ${taskId} not found in processing tasks.`);
             throw new Error(`Task with taskId ${taskId} not found in processing tasks.`);
         }
-        await this.updateTaskStatus(taskId, Entities.TaskStatus.Success);
+
+        await this.updateTaskStatus(taskId, Entities.TaskStatus.Success, null);
         await this.filterTasks();
         await this.tryFinalizeBatch(taskDetail.task.batch.name);
 
@@ -153,7 +154,7 @@ export abstract class TaskProcessor {
             this.logger.error(`Task with taskId ${taskId} not found in processing tasks.`);
             throw new Error(`Task with taskId ${taskId} not found in processing tasks.`);
         }
-        await this.updateTaskStatus(taskId, Entities.TaskStatus.Failed);
+        await this.updateTaskStatus(taskId, Entities.TaskStatus.Failed, error);
         await this.filterTasks();
         await this.tryFinalizeBatch(taskDetail.task.batch.name);
     }
@@ -172,7 +173,7 @@ export abstract class TaskProcessor {
                     this.logger.info(`Deferring ${deferredTasks.length} tasks due to timeout.`);
                 }
                 for (const task of deferredTasks) {
-                    await this.updateTaskStatus(task.task.id, Entities.TaskStatus.Deferred);
+                    await this.updateTaskStatus(task.task.id, Entities.TaskStatus.Deferred, null);
                 }
                 const tempTasks: TaskDetail[] = [];
                 await this.filterTasks();
@@ -205,7 +206,7 @@ export abstract class TaskProcessor {
                     }
                     catch (error) {
                         this.logger.error(`Error executing task ${taskDetail.task.id}: ${(error as Error).message}`);
-                        await this.updateTaskStatus(taskDetail.task.id, Entities.TaskStatus.Rejected);
+                        await this.updateTaskStatus(taskDetail.task.id, Entities.TaskStatus.Rejected, (error as Error).message);
                         await this.filterTasks();
                         await this.tryFinalizeBatch(taskDetail.task.batch.name);
                     }
@@ -230,10 +231,10 @@ export abstract class TaskProcessor {
         };
 
         task.sessionId = await this.indexService.index(this.context, content.documentType, Readable.from([Buffer.from(content.data)]), this.choice.items, this.indexCallback, taskCallbackData);
-        await this.updateTaskStatus(task.id, Entities.TaskStatus.Sent);
+        await this.updateTaskStatus(task.id, Entities.TaskStatus.Sent, null);
 
         await this.batchClient.createSession(task.sessionId, task.batch.name);
         await this.batchRepository.setTaskSession(this.batchType, task.batch.name, task.id, task.sessionId);
-        await this.updateTaskStatus(task.id, Entities.TaskStatus.Pending);
+        await this.updateTaskStatus(task.id, Entities.TaskStatus.Pending, null);
     }
 } 

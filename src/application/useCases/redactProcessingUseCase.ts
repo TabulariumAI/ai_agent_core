@@ -47,6 +47,7 @@ export class RedactProcessingUseCase {
         },
         sessionId: null,
         status: Entities.TaskStatus.Queued,
+        error: null,
       }))
     };
 

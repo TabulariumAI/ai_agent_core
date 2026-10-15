@@ -69,11 +69,13 @@ export class FsBatchRepository implements Interfaces.IBatchRepository {
                 continue;
             }
             const existingItem = items.find(item => item.status === task.status);
+            const reportDocument: Entities.BatchReportDocument = { name: task.name, error: task.error };
             if (existingItem) {
                 existingItem.count += 1;
-                existingItem.documents.push(task.name);
+
+                existingItem.documents.push(reportDocument);
             } else {
-                items.push({ status: task.status, count: 1, documents: [task.name] });
+                items.push({ status: task.status, count: 1, documents: [reportDocument] });
             }
         }
         
@@ -110,7 +112,7 @@ export class FsBatchRepository implements Interfaces.IBatchRepository {
     }
 
 
-    async setTaskStatus(task: Entities.Task, status: Entities.TaskStatus): Promise<void> {
+    async setTaskStatus(task: Entities.Task, status: Entities.TaskStatus, error: string | null): Promise<void> {
         const taskDir = path.join(Config.processingDir, this.batches, task.batch.type.toString(), task.batch.name, this.tasks, task.id);
         const lastVersion = await this.getLastVersion(taskDir);
         let nextVersion = 1;
@@ -121,6 +123,7 @@ export class FsBatchRepository implements Interfaces.IBatchRepository {
             throw new Error(`Failed to determine the last version for task ${task.id}`);
         }
 
+        task.error = error;
         const taskPath = path.join(taskDir, `data.${status.toString()}.v#${nextVersion}.json`);
         await fs.promises.writeFile(taskPath, JSON.stringify(task), { flag: "wx" });
     }

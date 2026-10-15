@@ -46,8 +46,9 @@ export interface IBatchRepository {
      * Sets the status of a task in the repository.
      * @param task - The task entity.
      * @param status - The new status of the task.
+     * @param error - The error message associated with the task, if any.
      */
-    setTaskStatus(task: Entities.Task, status: Entities.TaskStatus): Promise<void>;
+    setTaskStatus(task: Entities.Task, status: Entities.TaskStatus, error: string | null): Promise<void>;
     /**
      * Sets the session ID for a specific task within a batch.
      * @param batchType - The type of the batch.

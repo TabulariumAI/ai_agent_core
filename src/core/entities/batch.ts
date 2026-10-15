@@ -47,10 +47,15 @@ export interface BatchDetail {
     type: BatchType;
 }
 
+export interface BatchReportDocument {
+    name: string;
+    error: string | null;
+}
+
 export interface BatchReportItem {
     status: string;
     count: number;
-    documents: string[];
+    documents: BatchReportDocument[];
 }
 
 export interface BatchReport {
@@ -63,6 +68,7 @@ export interface Task {
     name: string;
     batch: BatchDetail;
     status: TaskStatus;
+    error: string | null;
     sessionId: string | null;
 }
 
