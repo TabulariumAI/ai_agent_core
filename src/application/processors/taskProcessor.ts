@@ -229,12 +229,13 @@ export abstract class TaskProcessor {
             id: task.id,
             batch: task.batch.name,
         };
-        let settings: Entities.Settings | null = null;
-        try {
-            settings = await this.batchSourceRepository.getSettings(this.batchInRoot, task.batch.name);
-        } catch (error) {
+        const settings: Entities.Settings | null = await this.batchSourceRepository.getSettings(this.batchInRoot, task.batch.name);
+        if (settings === null) {
+            this.logger.info(`Settings not found for task ${task.id}. Using default choice items.`);
         }
-
+        else {
+            this.logger.info(`Settings found for task ${task.id}. Using specified choice items.`);
+        }
         task.sessionId = await this.indexService.index(this.context, content.documentType, Readable.from([Buffer.from(content.data)]), settings?.choice.items || this.choice.items, this.indexCallback, taskCallbackData);
         await this.updateTaskStatus(task.id, Entities.TaskStatus.Sent, null);
 

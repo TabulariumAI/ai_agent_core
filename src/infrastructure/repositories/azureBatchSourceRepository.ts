@@ -23,8 +23,12 @@ export class AzureBatchSourceRepository implements Interfaces.IBatchSourceReposi
         if (await blobClient.exists()) {
             const buffer = await blobClient.downloadToBuffer();
             const data = new Uint8Array(buffer);
-            const settings: Entities.Settings = JSON.parse(Buffer.from(data).toString());
-            return settings;
+            try {
+                const settings: Entities.Settings = JSON.parse(Buffer.from(data).toString());
+                return settings;
+            } catch (error) {
+                return null;
+            }
         }
         return null;
     }
