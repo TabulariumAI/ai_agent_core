@@ -6,6 +6,7 @@ import * as Entities from "../entities/imports";
  * Defines the methods for managing batch sources and their content.
  */
 export interface IBatchSourceRepository {
+    getSettings(rootPath: string, batchName: string): Promise<Entities.Settings | null>;
     getBatch(rootPath: string, batchName: string): Promise<Entities.BatchSource | null>;
     getContent(rootPath: string, batchName: string, itemName: string): Promise<Entities.Content | null>;
     setContent(rootPath: string, batchName: string, itemName: string, content: Entities.Content): Promise<void>;

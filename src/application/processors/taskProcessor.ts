@@ -229,8 +229,13 @@ export abstract class TaskProcessor {
             id: task.id,
             batch: task.batch.name,
         };
+        let settings: Entities.Settings | null = null;
+        try {
+            settings = await this.batchSourceRepository.getSettings(this.batchInRoot, task.batch.name);
+        } catch (error) {
+        }
 
-        task.sessionId = await this.indexService.index(this.context, content.documentType, Readable.from([Buffer.from(content.data)]), this.choice.items, this.indexCallback, taskCallbackData);
+        task.sessionId = await this.indexService.index(this.context, content.documentType, Readable.from([Buffer.from(content.data)]), settings?.choice.items || this.choice.items, this.indexCallback, taskCallbackData);
         await this.updateTaskStatus(task.id, Entities.TaskStatus.Sent, null);
 
         await this.batchClient.createSession(task.sessionId, task.batch.name);

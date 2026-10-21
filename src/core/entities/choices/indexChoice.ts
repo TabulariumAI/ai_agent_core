@@ -27,7 +27,7 @@ export const indexChoice: Entities.Choice = {
             "level": 1
         },
         {
-            "service": "Validation",
+            "service": "TransactionIndexing",
             "level": 1
         }
     ]

@@ -10,12 +10,24 @@ import { Readable } from "stream";
 export class AzureBatchSourceRepository implements Interfaces.IBatchSourceRepository {
 
     private readonly report: string = "report.json";
+    private readonly settings: string = "settings.json";
 
     constructor(
         @Inject() private readonly fileTypeService: FileTypeService
     ) {
     }
-    
+
+    async getSettings(rootPath: string, batchName: string): Promise<Entities.Settings | null> {
+        const containerClient = new ContainerClient(Config.batchContainer);
+        const blobClient = containerClient.getBlobClient(`${rootPath}/${batchName}/${this.settings}`);
+        if (await blobClient.exists()) {
+            const buffer = await blobClient.downloadToBuffer();
+            const data = new Uint8Array(buffer);
+            const settings: Entities.Settings = JSON.parse(Buffer.from(data).toString());
+            return settings;
+        }
+        return null;
+    }
     async getBatch(rootPath: string, batchName: string): Promise<Entities.BatchSource | null> {
         const containerClient = new ContainerClient(Config.batchContainer);
         const prefix = `${rootPath}/${batchName}/`;
