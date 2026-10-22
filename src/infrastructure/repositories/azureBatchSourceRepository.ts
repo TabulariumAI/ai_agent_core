@@ -1,5 +1,6 @@
 import { Inject, Service } from "typedi";
 import { Config } from "../../config";
+import { TOKENS } from "../../core/tokens";
 import * as Entities from "../../core/entities/imports";
 import * as Interfaces from "../../core/interfaces/imports";
 import { ContainerClient } from "@azure/storage-blob";
@@ -14,7 +15,7 @@ export class AzureBatchSourceRepository implements Interfaces.IBatchSourceReposi
 
     constructor(
         @Inject() private readonly fileTypeService: FileTypeService,
-        @Inject() private readonly logger: Interfaces.ILogger,
+        @Inject(TOKENS.ILogger) private readonly logger: Interfaces.ILogger,
     ) {
     }
 
