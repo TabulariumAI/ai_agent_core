@@ -13,7 +13,8 @@ export class AzureBatchSourceRepository implements Interfaces.IBatchSourceReposi
     private readonly settings: string = "settings.json";
 
     constructor(
-        @Inject() private readonly fileTypeService: FileTypeService
+        @Inject() private readonly fileTypeService: FileTypeService,
+        @Inject() private readonly logger: Interfaces.ILogger,
     ) {
     }
 
@@ -27,8 +28,12 @@ export class AzureBatchSourceRepository implements Interfaces.IBatchSourceReposi
                 const settings: Entities.Settings = JSON.parse(Buffer.from(data).toString());
                 return settings;
             } catch (error) {
+                this.logger.error(`Failed to parse settings file at path: ${rootPath}/${batchName}/${this.settings}`);
                 return null;
             }
+        }
+        else {
+            this.logger.error(`Settings file not found at path: ${rootPath}/${batchName}/${this.settings}`);
         }
         return null;
     }
