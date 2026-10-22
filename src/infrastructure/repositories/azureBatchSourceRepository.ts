@@ -37,6 +37,7 @@ export class AzureBatchSourceRepository implements Interfaces.IBatchSourceReposi
         }
         return null;
     }
+    
     async getBatch(rootPath: string, batchName: string): Promise<Entities.BatchSource | null> {
         const containerClient = new ContainerClient(Config.batchContainer);
         const prefix = `${rootPath}/${batchName}/`;
