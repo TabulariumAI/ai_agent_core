@@ -41,7 +41,7 @@ export class AzureBatchSourceRepository implements Interfaces.IBatchSourceReposi
             if (blob.name.slice(prefix.length).includes("/") || blob.name.endsWith(".json")) {
                 continue;
             }
-            items.push(blob.name);
+            items.push(blob.name.slice(prefix.length));
         }
         if (items.length === 0) {
             return null;
