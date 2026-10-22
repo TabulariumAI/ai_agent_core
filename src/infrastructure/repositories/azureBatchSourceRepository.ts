@@ -37,11 +37,12 @@ export class AzureBatchSourceRepository implements Interfaces.IBatchSourceReposi
         const prefix = `${rootPath}/${batchName}/`;
         const items: string[] = [];
         for await (const blob of containerClient.listBlobsFlat({ prefix })) {
-            // Skip directories and JSON files
-            if (blob.name.slice(prefix.length).includes("/") || blob.name.endsWith(".json")) {
+            let blobName = blob.name;
+            blobName = blobName.slice(prefix.length);
+            if (blobName.includes("/") || blobName.endsWith(".json")) {
                 continue;
             }
-            items.push(blob.name.slice(prefix.length));
+            items.push(blobName);
         }
         if (items.length === 0) {
             return null;
