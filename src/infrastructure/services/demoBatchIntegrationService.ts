@@ -85,7 +85,7 @@ export class DemoBatchIntegrationService implements Interfaces.IIntegrationServi
      */
     async processIndex(session: Entities.SessionCallbackData, context: Entities.MetaDataContext): Promise<void> {
 
-        if (!session || !session.task) {
+        if (!session || !session.task || !session.task.id) {
             if (context.metaData) {
                 const fullPath = await this.saveMetadataJson(session.id, "index", "metadata.json", context.metaData);
                 this.logger.info(`Index metadata saved to ${fullPath}`);
@@ -94,24 +94,22 @@ export class DemoBatchIntegrationService implements Interfaces.IIntegrationServi
             }
             return;
         }
-        else {
-            if (context.metaData) {
-                const task = await this.batchRepository.getTask(Entities.BatchType.Index, session.task.batch, session.task.id);
-                if (!task) {
-                    throw new Error(`Task not found: ${session.task.id}`);
-                }
+        if (context.metaData) {
+            const task = await this.batchRepository.getTask(Entities.BatchType.Index, session.task.batch, session.task.id);
+            if (!task) {
+                throw new Error(`Task not found: ${session.task.id}`);
+            }
 
-                await this.batchSourceRepository.setContent(Config.batchIndexOut, session.task.batch, `${task.name}.metadata.json`, {
-                    documentType: "json",
-                    data: Buffer.from(context.metaData)
-                });
-                await getIndexProcessor().finalizeTaskSuccess(session.task.id);
-                this.logger.info(`Info: workflow:${Entities.Workflow.INDEX}, session: ${session.id}. Metadata saved to ${Config.batchIndexOut}`);
-            }
-            else {
-                await getIndexProcessor().finalizeTaskFailure(session.task.id, `${context.error || "No metadata available"}`);
-                this.logger.error(`Warning: workflow:${Entities.Workflow.INDEX}, session: ${session.id}. No metadata to save.`);
-            }
+            await this.batchSourceRepository.setContent(Config.batchIndexOut, session.task.batch, `${task.name}.metadata.json`, {
+                documentType: "json",
+                data: Buffer.from(context.metaData)
+            });
+            await getIndexProcessor().finalizeTaskSuccess(session.task.id);
+            this.logger.info(`Info: workflow:${Entities.Workflow.INDEX}, session: ${session.id}. Metadata saved to ${Config.batchIndexOut}`);
+        }
+        else {
+            await getIndexProcessor().finalizeTaskFailure(session.task.id, `${context.error || "No metadata available"}`);
+            this.logger.error(`Warning: workflow:${Entities.Workflow.INDEX}, session: ${session.id}. No metadata to save.`);
         }
     }
 
@@ -121,8 +119,8 @@ export class DemoBatchIntegrationService implements Interfaces.IIntegrationServi
      * @return A promise that resolves when the metadata is saved.
      * @throws Error if there is an issue saving the metadata.
      */
-    async processRefine(session: Entities.SessionCallbackData, context: Entities.MetaDataContext): Promise < void> {
-            if(context.metaData) {
+    async processRefine(session: Entities.SessionCallbackData, context: Entities.MetaDataContext): Promise<void> {
+        if (context.metaData) {
             const fullPath = await this.saveMetadataJson(session.id, "refine", "metadata.json", context.metaData);
             this.logger.info(`Info: workflow:${Entities.Workflow.REPROCESS}, session: ${session.id}. Metadata saved to ${fullPath}`);
         }
@@ -186,7 +184,7 @@ export class DemoBatchIntegrationService implements Interfaces.IIntegrationServi
      * @throws Error if there is an issue saving the document.
      */
     async processAutoRedact(session: Entities.SessionCallbackData, context: Entities.ContentContext): Promise<void> {
-        if (!session || !session.task) {
+        if (!session || !session.task || !session.task.id) {
             if (context.content) {
                 const file = this.callbackService.getCallbackDataFile(context.content.documentType);
                 const fullPath = await this.saveDocument(session.id, "autoredact", file, context.content);
@@ -196,9 +194,6 @@ export class DemoBatchIntegrationService implements Interfaces.IIntegrationServi
             }
             return;
         }
-        if (!session.task || !session.task.id) {
-            throw new Error(`Invalid session data: ${JSON.stringify(session)}`);
-        }
         if (context.content) {
             const task = await this.batchRepository.getTask(Entities.BatchType.Redact, session.task.batch, session.task.id);
             if (!task) {
@@ -206,7 +201,7 @@ export class DemoBatchIntegrationService implements Interfaces.IIntegrationServi
             }
             const ext = this.callbackService.getCallbackDataFileExtension(context.content.documentType);
             await this.batchSourceRepository.setContent(Config.batchRedactOut, session.task.batch, `${task.name}.${ext}`, {
-                documentType: context.content.documentType,
+                documentType: ext,
                 data: context.content.data
             });
             await getRedactProcessor().finalizeTaskSuccess(session.task.id);
