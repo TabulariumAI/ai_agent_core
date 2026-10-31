@@ -7,7 +7,6 @@ import { TOKENS } from "../../core/tokens";
 import * as Interfaces from "../../core/interfaces/imports";
 import * as Entities from "../../core/entities/imports";
 import { IndexTaskProcessor } from "../processors/indexTaskProcessor";
-import { NotFoundError } from "routing-controllers";
 import { getIndexProcessor } from "../processors/processorRegistry";
 
 export interface IndexProcessingData {
@@ -34,7 +33,7 @@ export class IndexProcessingUseCase {
   public async execute(data: IndexProcessingData): Promise<void> {
     const batch = await this.batchSourceRepository.getBatch(Config.batchIndexIn, data.batch);
     if (!batch) {
-      throw new NotFoundError(`Batch ${data.batch} not found in ${Config.batchIndexIn}`);
+      throw new Entities.NotFoundError(`Batch ${data.batch} not found in ${Config.batchRedactIn}`);
     }
 
     const id = `${Date.now()}_${randomUUID()}`;

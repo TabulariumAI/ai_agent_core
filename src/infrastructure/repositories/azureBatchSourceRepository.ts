@@ -43,11 +43,6 @@ export class AzureBatchSourceRepository implements Interfaces.IBatchSourceReposi
         const containerClient = new ContainerClient(Config.batchContainer);
         const prefix = `${rootPath}/${batchName}/`;
         const items: string[] = [];
-        // Check if the folder exists within the container
-        const folderExists = (await containerClient.listBlobsFlat({ prefix }).next()).done === false;
-        if (!folderExists) {
-            return null;
-        }
         for await (const blob of containerClient.listBlobsFlat({ prefix })) {
             let blobName = blob.name;
             blobName = blobName.slice(prefix.length);

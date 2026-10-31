@@ -28,7 +28,7 @@ export class RedactProcessingUseCase {
   public async execute(data: RedactProcessingData): Promise<void> {
     const batch = await this.batchSourceRepository.getBatch(Config.batchRedactIn, data.batch);
     if (!batch) {
-      throw new Error(`Batch ${data.batch} not found in ${Config.batchRedactIn}`);
+      throw new Entities.NotFoundError(`Batch ${data.batch} not found in ${Config.batchRedactIn}`);
     }
 
     const id = `${Date.now()}_${randomUUID()}`;
