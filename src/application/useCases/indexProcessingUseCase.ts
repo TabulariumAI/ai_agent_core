@@ -33,7 +33,7 @@ export class IndexProcessingUseCase {
   public async execute(data: IndexProcessingData): Promise<void> {
     const batch = await this.batchSourceRepository.getBatch(Config.batchIndexIn, data.batch);
     if (!batch) {
-      throw new Entities.NotFoundError(`Batch ${data.batch} not found in ${Config.batchRedactIn}`);
+      throw new Entities.NotFoundError(`Batch ${data.batch} not found`);
     }
 
     const id = `${Date.now()}_${randomUUID()}`;
